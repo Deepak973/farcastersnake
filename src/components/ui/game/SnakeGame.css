@@ -1,0 +1,287 @@
+/* SnakeGame.css */
+
+@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
+
+body {
+  background: radial-gradient(circle at top, #1b0033, #000000);
+  margin: 0;
+  font-family: "Press Start 2P", monospace;
+  color: #fff;
+}
+
+.game-container {
+  text-align: center;
+  padding: 2rem;
+  font-family: "Press Start 2P", monospace;
+}
+
+.alerts-container {
+  height: 40px; /* or enough for 1 line of alert text */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  transition: opacity 0.3s ease;
+}
+
+.alert {
+  background: #fff3cd;
+  color: #856404;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 500;
+  font-size: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid #ffeeba;
+}
+
+.game-title {
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  color: #8b5cf6;
+  text-shadow: 0 0 8px #8b5cf6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.title-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.game-board {
+  display: inline-block;
+  border: 3px solid #8b5cf6;
+  padding: 8px;
+  border-radius: 12px;
+  box-shadow: 0 0 20px #8b5cf6;
+  background-color: #111;
+  max-width: 100%;
+  overflow: auto;
+}
+
+.board-grid {
+  display: grid;
+}
+
+.cell {
+  width: 24px;
+  height: 24px;
+  background-color: #222;
+  border: 1px solid #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cell-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.snake-body {
+  background-color: #a855f7;
+  box-shadow: 0 0 6px #c084fc;
+}
+
+.emoji {
+  font-size: 18px;
+}
+
+.score-display {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: #00ffcc;
+  text-shadow: 0 0 6px #00ffcc;
+}
+
+.game-over {
+  margin-top: 1rem;
+  font-size: 1rem;
+  color: #ff4d4f;
+  text-shadow: 0 0 8px red;
+}
+
+.restart-btn {
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.75rem;
+  font-family: "Press Start 2P", monospace;
+  background-color: #8b5cf6;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 0 6px #a855f7;
+  transition: all 0.2s ease;
+}
+
+.restart-btn:hover {
+  background-color: #a855f7;
+  box-shadow: 0 0 12px #d8b4fe;
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  font-size: 16px;
+  font-weight: 500;
+  text-align: center;
+  gap: 8px;
+  margin: 12px 0 20px;
+  padding: 8px 16px;
+  border-radius: 12px;
+  background: #f9f9f9;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  color: #333;
+}
+.legend-item {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border: 1px solid #ccc;
+}
+
+.legend-icon {
+  height: 20px;
+  width: 20px;
+  vertical-align: middle;
+  margin: 0 4px;
+}
+
+/* styles.css or your global CSS file */
+.cell-icon {
+  width: 80%;
+  height: 80%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.emoji {
+  font-size: clamp(14px, 3.5vw, 24px);
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.game-over {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.game-over-title {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #ff5e5e;
+}
+
+.game-over-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.submit-score-btn,
+.restart-btn {
+  background-color: #9f7fff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 0 10px #bdaaff;
+  transition: transform 0.2s ease;
+}
+
+.submit-score-btn:hover,
+.restart-btn:hover {
+  transform: scale(1.05);
+}
+
+/* Existing styles stay the same… */
+
+@media (max-width: 600px) {
+  .game-container {
+    padding: 1rem;
+    font-size: 12px;
+  }
+
+  .board-grid {
+    grid-template-columns: repeat(15, 20px) !important;
+    grid-template-rows: repeat(15, 20px) !important;
+  }
+
+  .cell {
+    width: 20px;
+    height: 20px;
+  }
+
+  .cell-icon {
+    width: 14px;
+    height: 14px;
+  }
+
+  .touch-controls {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .touch-controls button {
+    background: #a855f7;
+    color: white;
+    font-size: 1.2rem;
+    border: none;
+    padding: 0.6rem;
+    border-radius: 8px;
+    margin: 2px;
+    width: 60px;
+    box-shadow: 0 0 8px #a855f7;
+    transition: 0.2s;
+  }
+
+  .touch-controls div {
+    display: flex;
+    gap: 6px;
+  }
+
+  .touch-controls button:active {
+    transform: scale(0.95);
+    background-color: #9333ea;
+  }
+
+  .game-title {
+    font-size: 1rem;
+  }
+
+  .score-display {
+    font-size: 0.75rem;
+  }
+
+  .alert {
+    font-size: 0.7rem;
+  }
+
+  .legend {
+    font-size: 0.5rem;
+  }
+
+  .restart-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.65rem;
+  }
+}
