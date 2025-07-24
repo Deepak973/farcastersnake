@@ -28,7 +28,7 @@ export async function POST(req: Request) {
       });
     } else if (score > existing.score) {
       await collection.updateOne(
-        { address },
+        { username },
         {
           $set: {
             score,
