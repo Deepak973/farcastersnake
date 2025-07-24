@@ -14,7 +14,7 @@
  */
 export function HomeTab() {
   return (
-    <div className="px-6 py-12 md:py-20 lg:py-24 min-h-[calc(100vh-200px)]">
+    <div className="px-6 py-12 md:py-20 lg:py-24 min-h-[calc(100vh-200px)] bg-black">
       <div className="text-center w-full max-w-md mx-auto text-sm leading-relaxed text-white font-mono">
         <p className="text-lg font-bold mb-2">Eat, Drink, Poop, Repeat</p>
 
