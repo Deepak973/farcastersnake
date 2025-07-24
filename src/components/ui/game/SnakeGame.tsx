@@ -289,15 +289,17 @@ const SnakeGame: React.FC = () => {
           )}
         </div>
       )}
-      <ShareButton
-        buttonText="Share Mini App"
-        cast={{
-          text: `I just scored ${score} in Farcaster Snake! Try it out! @1 @2 @3`,
-          bestFriends: true,
-          embeds: [`${APP_URL}/share/${context?.user?.fid || ""}`],
-        }}
-        className="w-full"
-      />
+      {gameOver && (
+        <ShareButton
+          buttonText="Share Score"
+          cast={{
+            text: `I just scored ${score} in Farcaster Snake! Try it out! @1 @2 @3`,
+            bestFriends: true,
+            embeds: [`${APP_URL}/share/${context?.user?.fid || ""}`],
+          }}
+          className="w-full"
+        />
+      )}
     </div>
   );
 };
