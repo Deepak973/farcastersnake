@@ -1,0 +1,22 @@
+{
+  "frame": {
+    "name": "Farcaster Snake",
+    "version": "1",
+    "iconUrl": "https://farcastersnake.vercel.app/logo.jpg",
+    "homeUrl": "https://farcastersnake.vercel.app",
+    "imageUrl": "https://farcastersnake.vercel.app/logo.jpg",
+    "buttonTitle": "Open Farcaster Snake",
+    "splashImageUrl": "https://farcastersnake.vercel.app/splash.png",
+    "splashBackgroundColor": "#8b5cf6",
+    "subtitle": "Eat, Drink, Poop. Repeat in Rythm. GenZ’s wildest snake game.",
+    "description": "Farcaster Snake is not just a game. It’s a social experience. Eat to grow, drink to survive, poop or you’ll die 💀. Compete on leaderboards, challenge friends, and stay tuned for V2 where your followers become your fuel. Pay to play & earn $SNAKE if you score over 50. It’s fun, chaotic, and pure GenZ energy.",
+    "primaryCategory": "games",
+    "screenshotUrls": ["https://farcastersnake.vercel.app/screenshot.png"],
+    "tagline": "Eat, Drink, Poop. Repeat "
+  },
+  "accountAssociation": {
+    "header": "eyJmaWQiOjY3MzEyNiwidHlwZSI6ImF1dGgiLCJrZXkiOiIweDQ2RkU3ZDUxRTNiOTA4MENDY0VDMTJBNjc1ZjYzQzg5MkEyYzBEM0YifQ",
+    "payload": "eyJkb21haW4iOiJodHRwczovL2ZhcmNhc3RlcnNuYWtlLnZlcmNlbC5hcHAvIn0",
+    "signature": "pyrzknkj7Y8xOG9YAUxZk4byaKhvuIs5px5kXdgAx3lCC6f1JFrQQknckAzB/PycRLmcz77OhpoMqYEkE5Fs7Bw="
+  }
+}
