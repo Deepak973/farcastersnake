@@ -47,6 +47,7 @@ const SnakeGame: React.FC = () => {
   const [bitesSinceWater, setBitesSinceWater] = useState(0);
   const [bitesSincePoop, setBitesSincePoop] = useState(0);
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
+  const [scoreSubmitting, setScoreSubmitting] = useState(false);
   const moveRef = useRef(direction);
   const { address } = useAccount();
   const { context } = useMiniApp();
@@ -58,6 +59,15 @@ const SnakeGame: React.FC = () => {
   useEffect(() => {
     if (gameOver) return;
     const handleKey = (e: KeyboardEvent) => {
+      if (
+        e.key === "ArrowUp" ||
+        e.key === "ArrowDown" ||
+        e.key === "ArrowLeft" ||
+        e.key === "ArrowRight"
+      ) {
+        e.preventDefault();
+      }
+
       if (e.key === "ArrowUp" && moveRef.current.y !== 1)
         setDirection({ x: 0, y: -1 });
       if (e.key === "ArrowDown" && moveRef.current.y !== -1)
@@ -67,7 +77,8 @@ const SnakeGame: React.FC = () => {
       if (e.key === "ArrowRight" && moveRef.current.x !== -1)
         setDirection({ x: 1, y: 0 });
     };
-    window.addEventListener("keydown", handleKey);
+
+    window.addEventListener("keydown", handleKey, { passive: false });
     return () => window.removeEventListener("keydown", handleKey);
   }, [gameOver]);
 
@@ -151,11 +162,12 @@ const SnakeGame: React.FC = () => {
   }, [foods, water, commode, bitesSinceWater, bitesSincePoop, gameOver]);
 
   const submitScore = async (address: string, score: number) => {
+    setScoreSubmitting(true);
     const res = await fetch("/api/submit-score", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        address: "0x0",
+        address: address,
         username: context?.user?.username || "anon",
         score,
         profileImage: context?.user?.pfpUrl || "",
@@ -163,7 +175,8 @@ const SnakeGame: React.FC = () => {
     });
 
     const data = await res.json();
-    console.log(data);
+
+    setScoreSubmitting(false);
   };
   const handleRestart = () => {
     setSnake(INITIAL_SNAKE);
@@ -274,7 +287,7 @@ const SnakeGame: React.FC = () => {
                 await submitScore(address as string, score);
                 setScoreSubmitted(true);
               }}
-              disabled={scoreSubmitted}
+              disabled={scoreSubmitted || scoreSubmitting}
             >
               {scoreSubmitted ? "✅ Submitted" : "Submit Score"}
             </button>
