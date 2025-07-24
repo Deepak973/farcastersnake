@@ -51,7 +51,30 @@ const SnakeGame: React.FC = () => {
   const moveRef = useRef(direction);
   const { address } = useAccount();
   const { context } = useMiniApp();
+  const [isMuted, setIsMuted] = useState(false);
 
+  // Sound refs
+  const biteSound = useRef<HTMLAudioElement | null>(null);
+  const drinkSound = useRef<HTMLAudioElement | null>(null);
+  const flushSound = useRef<HTMLAudioElement | null>(null);
+  const gameOverSound = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    // Load sound files
+    biteSound.current = new Audio("/sounds/bite.mp3");
+    drinkSound.current = new Audio("/sounds/drink.mp3");
+    flushSound.current = new Audio("/sounds/flush.mp3");
+    gameOverSound.current = new Audio("/sounds/wasted.mp3");
+  }, []);
+
+  const playSound = (
+    soundRef: React.MutableRefObject<HTMLAudioElement | null>
+  ) => {
+    if (!isMuted && soundRef.current) {
+      soundRef.current.currentTime = 0;
+      soundRef.current.play().catch(console.error);
+    }
+  };
   useEffect(() => {
     moveRef.current = direction;
   }, [direction]);
@@ -93,6 +116,7 @@ const SnakeGame: React.FC = () => {
 
         if (prev.some((cell) => cell.x === newHead.x && cell.y === newHead.y)) {
           setGameOver(true);
+          playSound(gameOverSound);
           return prev;
         }
 
@@ -103,24 +127,24 @@ const SnakeGame: React.FC = () => {
           (f) => f.x === newHead.x && f.y === newHead.y
         );
 
-        // Drink water
         if (isWater) {
           setWater(null);
           setBitesSinceWater(0);
+          playSound(drinkSound);
           return [newHead, ...prev.slice(0, -1)];
         }
 
-        // Use commode
         if (isCommode) {
           setCommode(null);
           setBitesSincePoop(0);
+          playSound(flushSound);
           return [newHead, ...prev.slice(0, -1)];
         }
 
-        // Eat food
         if (foodIdx !== -1) {
           if (bitesSinceWater >= 2 || bitesSincePoop >= 5) {
             setGameOver(true);
+            playSound(gameOverSound);
             return prev;
           }
 
@@ -140,8 +164,8 @@ const SnakeGame: React.FC = () => {
 
           setBitesSinceWater(newBites);
           setBitesSincePoop(newPoopCount);
-
           setScore((s) => s + 1);
+          playSound(biteSound);
 
           if (newBites === 2 && !water) {
             setWater(getRandomCell([...prev, ...newFoods]));
@@ -154,7 +178,6 @@ const SnakeGame: React.FC = () => {
           return [newHead, ...prev];
         }
 
-        // Move normally
         return [newHead, ...prev.slice(0, -1)];
       });
     }, 120);
@@ -173,11 +196,10 @@ const SnakeGame: React.FC = () => {
         profileImage: context?.user?.pfpUrl || "",
       }),
     });
-
-    const data = await res.json();
-
+    await res.json();
     setScoreSubmitting(false);
   };
+
   const handleRestart = () => {
     setSnake(INITIAL_SNAKE);
     setDirection(INITIAL_DIRECTION);
@@ -197,6 +219,12 @@ const SnakeGame: React.FC = () => {
         <img src="/farcaster.webp" alt="Farcaster" className="title-icon" />
         Farcaster Snake
       </h2>
+      <button
+        className="mute-button"
+        onClick={() => setIsMuted((prev) => !prev)}
+      >
+        {isMuted ? "🔇 Mute" : "🔊 Sound"}
+      </button>
       <div className="legend">
         <span>
           Eat to grow. Drink 💧 after every 2 bites and poop 🚽 after every 5 or
@@ -204,7 +232,6 @@ const SnakeGame: React.FC = () => {
         </span>
       </div>
 
-      {/* Reserved space for alerts */}
       <div className="alerts-container">
         {!gameOver && bitesSinceWater === 2 && (
           <div className="alert">💧 Water Time! Drink now!</div>
@@ -279,7 +306,7 @@ const SnakeGame: React.FC = () => {
 
       {gameOver && (
         <div className="game-over">
-          <div className="game-over-title">💀 Game Over!</div>
+          <div className="game-over-title">💀 WASTED!</div>
           <div className="game-over-buttons">
             <button
               className="submit-score-btn"
@@ -302,6 +329,7 @@ const SnakeGame: React.FC = () => {
           )}
         </div>
       )}
+
       {gameOver && scoreSubmitted && (
         <ShareButton
           buttonText="Share Score"
