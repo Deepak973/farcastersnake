@@ -302,7 +302,7 @@ const SnakeGame: React.FC = () => {
           )}
         </div>
       )}
-      {gameOver && (
+      {gameOver && scoreSubmitted && (
         <ShareButton
           buttonText="Share Score"
           cast={{
