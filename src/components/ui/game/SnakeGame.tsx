@@ -180,7 +180,7 @@ const SnakeGame: React.FC = () => {
 
         return [newHead, ...prev.slice(0, -1)];
       });
-    }, 120);
+    }, 180);
     return () => clearInterval(interval);
   }, [foods, water, commode, bitesSinceWater, bitesSincePoop, gameOver]);
 
