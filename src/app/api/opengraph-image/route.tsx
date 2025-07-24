@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
           />
         </div>
 
-        <h1 tw="text-8xl text-white">Eat, Drink, Poop Repeat</h1>
+        <h1 tw="text-8xl text-purple-500">Eat, Drink, Poop Repeat</h1>
       </div>
     ),
     {
