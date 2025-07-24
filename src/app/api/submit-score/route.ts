@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     const db = client.db("farcaster-snake");
     const collection = db.collection("scores");
 
-    const existing = await collection.findOne({ address });
+    const existing = await collection.findOne({ username });
 
     if (!existing) {
       await collection.insertOne({
