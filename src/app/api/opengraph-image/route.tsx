@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
       <div tw="flex h-full w-full flex-col justify-center items-center relative bg-primary">
         <div tw="flex w-96 h-96 rounded-full overflow-hidden mb-8 border-8 border-white">
           <img
-            src={"/logo.jpg"}
+            src={"https://farcastersnake.vercel.app/logo.jpg"}
             alt="Farcaster Snake"
             tw="w-full h-full object-cover"
           />
