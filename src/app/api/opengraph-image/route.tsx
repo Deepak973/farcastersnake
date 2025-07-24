@@ -1,15 +1,9 @@
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
-import { getNeynarUser } from "~/lib/neynar";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const fid = searchParams.get("fid");
-
-  const user = fid ? await getNeynarUser(Number(fid)) : null;
-
   return new ImageResponse(
     (
       <div tw="flex h-full w-full flex-col justify-center items-center relative bg-primary">
@@ -21,11 +15,7 @@ export async function GET(request: NextRequest) {
           />
         </div>
 
-        <h1 tw="text-8xl text-white">
-          {user?.display_name
-            ? `Eat, Drink, Poop Repeat`
-            : "Eat, Drink, Poop Repeat"}
-        </h1>
+        <h1 tw="text-8xl text-white">Eat, Drink, Poop Repeat</h1>
       </div>
     ),
     {
