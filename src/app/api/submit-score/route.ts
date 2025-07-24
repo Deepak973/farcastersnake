@@ -8,7 +8,7 @@ export async function POST(req: Request) {
   try {
     const { username, score, address, profileImage } = await req.json();
 
-    if (!address || score == null) {
+    if (!username || score == null) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
 
