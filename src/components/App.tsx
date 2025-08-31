@@ -3,9 +3,7 @@
 import { useEffect } from "react";
 import { useMiniApp } from "@neynar/react";
 import { Header } from "~/components/ui/Header";
-import { Footer } from "~/components/ui/Footer";
-import { HomeTab, ActionsTab } from "~/components/ui/tabs";
-import LeaderboardTab from "./ui/game/LeaderBoard";
+import SnakeGame from "./ui/game/SnakeGame";
 
 // --- Types ---
 export enum Tab {
@@ -50,63 +48,11 @@ export interface AppProps {
 export default function App(
   { title }: AppProps = { title: "Neynar Starter Kit" }
 ) {
-  // --- Hooks ---
-  const { isSDKLoaded, context, setInitialTab, setActiveTab, currentTab } =
-    useMiniApp();
-
-  // --- Neynar user hook ---
-
-  // --- Effects ---
-  /**
-   * Sets the initial tab to "home" when the SDK is loaded.
-   *
-   * This effect ensures that users start on the home tab when they first
-   * load the mini app. It only runs when the SDK is fully loaded to
-   * prevent errors during initialization.
-   */
-  useEffect(() => {
-    if (isSDKLoaded) {
-      setInitialTab(Tab.Home);
-    }
-  }, [isSDKLoaded, setInitialTab]);
-
-  // --- Early Returns ---
-  if (!isSDKLoaded) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <div className="spinner h-8 w-8 mx-auto mb-4"></div>
-          <p>Loading SDK...</p>
-        </div>
-      </div>
-    );
-  }
-
   // --- Render ---
   return (
-    <div
-      style={{
-        paddingTop: context?.client.safeAreaInsets?.top ?? 0,
-        paddingBottom: context?.client.safeAreaInsets?.bottom ?? 0,
-        paddingLeft: context?.client.safeAreaInsets?.left ?? 0,
-        paddingRight: context?.client.safeAreaInsets?.right ?? 0,
-      }}
-    >
-      {/* Header should be full width */}
-      <Header />
-
-      {/* Main content and footer should be centered */}
+    <div>
       <div className="container py-2 pb-20">
-        {/* Main title */}
-        <h1 className="text-2xl font-bold text-center mb-4">{title}</h1>
-
-        {/* Tab content rendering */}
-        {currentTab === Tab.Home && <HomeTab />}
-        {currentTab === Tab.Actions && <ActionsTab />}
-        {currentTab === Tab.Leaderboard && <LeaderboardTab />}
-
-        {/* Footer with navigation */}
-        <Footer activeTab={currentTab as Tab} setActiveTab={setActiveTab} />
+        <SnakeGame />
       </div>
     </div>
   );

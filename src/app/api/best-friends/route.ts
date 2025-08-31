@@ -24,7 +24,7 @@ export async function GET(request: Request) {
 
   try {
     const response = await fetch(
-      `https://api.neynar.com/v2/farcaster/user/best_friends?fid=${fid}&limit=3`,
+      `https://api.neynar.com/v2/farcaster/user/best_friends?fid=${fid}&limit=10`,
       {
         headers: {
           "x-api-key": apiKey,

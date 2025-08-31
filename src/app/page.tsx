@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import App from "./app";
 import { APP_NAME, APP_DESCRIPTION, APP_OG_IMAGE_URL } from "~/lib/constants";
 import { getMiniAppEmbedMetadata } from "~/lib/utils";
+import SnakeGame from "~/components/ui/game/SnakeGame";
 
 export const revalidate = 300;
 
@@ -20,5 +21,5 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function Home() {
-  return (<App />);
+  return <SnakeGame />;
 }

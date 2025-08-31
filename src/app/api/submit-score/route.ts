@@ -6,7 +6,7 @@ const client = new MongoClient(process.env.MONGODB_URI!);
 
 export async function POST(req: Request) {
   try {
-    const { username, score, address, profileImage } = await req.json();
+    const { username, score, address, profileImage, fid } = await req.json();
 
     if (!username || score == null) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
@@ -24,6 +24,7 @@ export async function POST(req: Request) {
         username,
         score,
         profileImage,
+        fid: fid || null,
         timestamp: new Date(),
       });
     } else if (score > existing.score) {
@@ -33,6 +34,7 @@ export async function POST(req: Request) {
           $set: {
             score,
             username,
+            fid: fid || existing.fid,
             timestamp: new Date(),
           },
         }
