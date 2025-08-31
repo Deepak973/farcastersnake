@@ -302,7 +302,7 @@ export const ChallengesComponent: React.FC<ChallengesComponentProps> = ({
                           </span>
                           <button
                             onClick={() => {
-                              const challengeUrl = `${window.location.origin}/challenge/${challenge.id}`;
+                              const challengeUrl = `https://farcaster.xyz/miniapps/SmXRQmh2Sp33/farcaster-snake/challenge/${challenge.id}`;
                               navigator.clipboard.writeText(challengeUrl);
                               alert("Challenge link copied to clipboard!");
                             }}
@@ -336,7 +336,7 @@ export const ChallengesComponent: React.FC<ChallengesComponentProps> = ({
                                 text: generateChallengeShareText(challenge),
                                 bestFriends: true,
                                 embeds: [
-                                  `${window.location.origin}/challenge/${challenge.id}`,
+                                  `https://farcaster.xyz/miniapps/SmXRQmh2Sp33/farcaster-snake/challenge/${challenge.id}`,
                                 ],
                               }}
                               className="inline-block bg-deep-pink text-soft-pink px-3 py-1 rounded font-bold text-xs hover:bg-bright-pink transition-colors text-center"
