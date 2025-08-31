@@ -47,6 +47,16 @@ function getMultipleRandomCells(count: number, occupied: Cell[]): Cell[] {
   return cells;
 }
 
+// Fisher-Yates shuffle algorithm
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
 interface SnakeGameProps {
   onGameOver?: (score: number) => void;
 }
@@ -75,6 +85,10 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
     name: string;
     image: string;
   } | null>(null);
+  const [previousBestScore, setPreviousBestScore] = useState<number | null>(
+    null
+  );
+  const [eatenFollowers, setEatenFollowers] = useState<Follower[]>([]);
   const moveRef = useRef(direction);
   const { address } = useAccount();
   const { context } = useMiniApp();
@@ -86,7 +100,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
   const flushSound = useRef<HTMLAudioElement | null>(null);
   const gameOverSound = useRef<HTMLAudioElement | null>(null);
 
-  // Fetch followers on component mount
+  // Fetch followers and previous best score on component mount
   useEffect(() => {
     const fetchFollowers = async () => {
       try {
@@ -95,7 +109,9 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
         const data = await response.json();
 
         if (data.followers && data.followers.length > 0) {
-          setFollowers(data.followers);
+          // Shuffle the followers array to get different sequence each time
+          const shuffledFollowers = shuffleArray(data.followers as Follower[]);
+          setFollowers(shuffledFollowers);
         }
       } catch (error) {
         console.error("Failed to fetch followers:", error);
@@ -103,8 +119,29 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
       }
     };
 
+    const fetchPreviousBestScore = async () => {
+      if (!context?.user?.fid && !context?.user?.username) return;
+
+      try {
+        const params = new URLSearchParams();
+        if (context.user.fid) params.append("fid", context.user.fid.toString());
+        if (context.user.username)
+          params.append("username", context.user.username);
+
+        const response = await fetch(`/api/leaderboard?${params}`);
+        const data = await response.json();
+
+        if (data.scores && data.scores.length > 0) {
+          setPreviousBestScore(data.scores[0].score);
+        }
+      } catch (error) {
+        console.error("Failed to fetch previous best score:", error);
+      }
+    };
+
     fetchFollowers();
-  }, [context?.user?.fid]);
+    fetchPreviousBestScore();
+  }, [context?.user?.fid, context?.user?.username]);
 
   useEffect(() => {
     // Load sound files
@@ -165,8 +202,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
         if (prev.some((cell) => cell.x === newHead.x && cell.y === newHead.y)) {
           setGameOver(true);
           playSound(gameOverSound);
-          // Auto-submit score to leaderboard
-          autoSubmitScore();
+
           if (onGameOver) {
             onGameOver(score);
           }
@@ -199,20 +235,22 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
             setGameOver(true);
             playSound(gameOverSound);
             // Auto-submit score to leaderboard
-            autoSubmitScore();
             if (onGameOver) {
               onGameOver(score);
             }
             return prev;
           }
 
-          // Show eaten message
+          // Show eaten message and track eaten follower
           if (followers.length > 0) {
             const eatenFollower = followers[currentFollowerIndex];
             setEatenMessage({
               name: eatenFollower.displayName || eatenFollower.username,
               image: eatenFollower.pfpUrl,
             });
+
+            // Add to eaten followers list
+            setEatenFollowers((prev) => [...prev, eatenFollower]);
 
             // Clear message after 3 seconds
             setTimeout(() => setEatenMessage(null), 3000);
@@ -268,8 +306,21 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
   ]);
 
   const submitScore = async (address: string, score: number) => {
+    // Only submit if score is higher than previous best or if no previous score exists
+    if (previousBestScore !== null && score <= previousBestScore) {
+      console.log(
+        `Score ${score} not submitted - previous best is ${previousBestScore}`
+      );
+      setScoreSubmitted(true); // Mark as submitted to prevent auto-submission
+      return;
+    }
+
     setScoreSubmitting(true);
     try {
+      if (!context?.user?.fid) {
+        console.log("No fid found");
+        return;
+      }
       const res = await fetch("/api/submit-score", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -284,18 +335,15 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
       const data = await res.json();
       console.log("Score submitted successfully:", data);
       setScoreSubmitted(true);
+
+      // Update previous best score if this is a new high score
+      if (previousBestScore === null || score > previousBestScore) {
+        setPreviousBestScore(score);
+      }
     } catch (error) {
       console.error("Error submitting score:", error);
     } finally {
       setScoreSubmitting(false);
-    }
-  };
-
-  // Auto-submit score when game ends
-  const autoSubmitScore = async () => {
-    if (address && score > 0 && !scoreSubmitted) {
-      console.log("Auto-submitting score:", score);
-      await submitScore(address, score);
     }
   };
 
@@ -312,19 +360,13 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
     setScoreSubmitted(false);
     setCurrentFollowerIndex(0);
     setEatenMessage(null);
-    // Keep game started for "Play Again"
-  };
+    setEatenFollowers([]); // Reset eaten followers list
 
-  const _handleBackToMenu = () => {
-    setGameStarted(false);
-    setGameOver(false);
-    setScore(0);
-    setBitesSinceWater(0);
-    setBitesSincePoop(0);
-    setScoreSubmitted(false);
-    setCurrentFollowerIndex(0);
-    setEatenMessage(null);
-    setActiveComponent(null);
+    // Shuffle followers for a new sequence
+    if (followers.length > 0) {
+      const shuffledFollowers = shuffleArray(followers);
+      setFollowers(shuffledFollowers);
+    }
   };
 
   const handleSidebarAction = (action: string) => {
@@ -348,6 +390,12 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
   const handleStartGame = () => {
     setGameStarted(true);
     setShowInfoModal(false);
+
+    // Shuffle followers for a new sequence when starting game
+    if (followers.length > 0) {
+      const shuffledFollowers = shuffleArray(followers);
+      setFollowers(shuffledFollowers);
+    }
   };
 
   // Get current follower for food display
@@ -356,12 +404,41 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
     return followers[currentFollowerIndex];
   };
 
+  // Generate share text with eaten followers
+  const generateShareText = () => {
+    let shareText = `I just scored ${score} in Farcaster Snake!`;
+
+    if (eatenFollowers.length > 0) {
+      const uniqueFollowers = eatenFollowers.filter(
+        (follower, index, self) =>
+          index === self.findIndex((f) => f.fid === follower.fid)
+      );
+
+      if (uniqueFollowers.length === 1) {
+        const follower = uniqueFollowers[0];
+        shareText += ` I ate @${follower.username}!`;
+      } else if (uniqueFollowers.length <= 3) {
+        const names = uniqueFollowers.map((f) => `@${f.username}`).join(", ");
+        shareText += ` I ate ${names}!`;
+      } else {
+        const names = uniqueFollowers
+          .slice(0, 3)
+          .map((f) => `@${f.username}`)
+          .join(", ");
+        shareText += ` I ate ${names} and ${uniqueFollowers.length - 3} more!`;
+      }
+    }
+
+    shareText += ` Try it out! @1 @2 @3`;
+    return shareText;
+  };
+
   // Info Modal Component
   const InfoModal = ({ onStart }: { onStart: () => void }) => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-soft-pink rounded-2xl p-6 max-w-md mx-auto border-2 border-deep-pink shadow-2xl">
         <h3 className="text-deep-pink text-xl font-bold mb-4 text-center">
-          🎮 How to Play
+          How to Play
         </h3>
         <div className="space-y-3 text-black text-sm">
           <div className="flex items-center gap-3">
@@ -407,7 +484,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
   // Game Over Modal Component
   const GameOverModal = () => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-soft-pink rounded-2xl p-6 max-w-md mx-auto border-2 border-deep-pink shadow-2xl">
+      <div className="bg-soft-pink rounded-2xl p-6 max-w-lg mx-auto border-2 border-deep-pink shadow-2xl">
         <h3 className="text-deep-pink text-2xl font-bold mb-4 text-center">
           💀 WASTED!
         </h3>
@@ -416,19 +493,37 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
             Final Score:{" "}
             <span className="text-bright-pink font-bold">{score}</span>
           </p>
+          {previousBestScore !== null && (
+            <div className="text-sm text-gray-600 mb-2">
+              Previous Best: {previousBestScore}
+            </div>
+          )}
+          {previousBestScore !== null && score > previousBestScore && (
+            <div className="text-green-600 font-bold text-sm mb-2">
+              🎉 New Personal Best!
+            </div>
+          )}
+          {previousBestScore !== null && score <= previousBestScore && (
+            <div className="text-gray-600 text-sm mb-2">
+              {score === previousBestScore
+                ? "🏆 Tied your best score!"
+                : "Keep trying to beat your best!"}
+            </div>
+          )}
         </div>
         <div className="space-y-3">
-          {!scoreSubmitted && (
-            <button
-              className="w-full bg-bright-pink text-soft-pink py-3 px-4 rounded-xl font-bold hover:bg-deep-pink transition-colors"
-              onClick={async () => {
-                await submitScore(address as string, score);
-              }}
-              disabled={scoreSubmitting}
-            >
-              {scoreSubmitting ? "Submitting..." : "Submit Score"}
-            </button>
-          )}
+          {!scoreSubmitted &&
+            (previousBestScore === null || score > previousBestScore) && (
+              <button
+                className="w-full bg-bright-pink text-soft-pink py-3 px-4 rounded-xl font-bold hover:bg-deep-pink transition-colors"
+                onClick={async () => {
+                  await submitScore(address as string, score);
+                }}
+                disabled={scoreSubmitting}
+              >
+                {scoreSubmitting ? "Submitting..." : "Submit Score"}
+              </button>
+            )}
           <button
             className="w-full bg-deep-pink text-soft-pink py-3 px-4 rounded-xl font-bold hover:bg-bright-pink transition-colors"
             onClick={handleRestart}
@@ -436,22 +531,28 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
             Play Again
           </button>
         </div>
+
         {scoreSubmitted && (
           <div className="mt-4 text-center">
             <div className="text-green-600 font-bold mb-3">
-              🎉 Score automatically submitted to leaderboard!
+              {previousBestScore !== null && score > previousBestScore
+                ? "🎉 New personal best submitted to leaderboard!"
+                : "✅ Score processed!"}
             </div>
-            <ShareButton
-              buttonText="Share Score"
-              cast={{
-                text: `I just scored ${score} in Farcaster Snake! Try it out! @1 @2 @3`,
-                bestFriends: true,
-                embeds: [`${APP_URL}/share/${context?.user?.fid || ""}`],
-              }}
-              className="w-full"
-            />
           </div>
         )}
+
+        <div className="mt-4">
+          <ShareButton
+            buttonText="📤 Share Score"
+            cast={{
+              text: generateShareText(),
+              bestFriends: true,
+              embeds: [`${APP_URL}/share/${context?.user?.fid || ""}`],
+            }}
+            className="w-full bg-bright-pink text-soft-pink py-3 px-4 rounded-xl font-bold hover:bg-deep-pink transition-colors"
+          />
+        </div>
       </div>
     </div>
   );
@@ -561,7 +662,33 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
       ) : (
         <>
           {gameOver && <GameOverModal />}
-          <div className="score-display">Score: {score}</div>
+          {gameStarted && (
+            <div className="absolute top-4 left-0 w-full px-6">
+              {/* Top row: Best (left) + Score (center) */}
+              <div className="flex items-center justify-between relative">
+                <div className="text-soft-pink font-bold">
+                  Best: {previousBestScore}
+                </div>
+                <div className="absolute left-1/2 transform -translate-x-1/2 text-soft-pink font-bold">
+                  Score: {score}
+                </div>
+              </div>
+
+              {/* Alerts (below Best on left) */}
+              <div className="absolute top-10 left-0 w-fill px-6">
+                {!gameOver && bitesSinceWater === 2 && (
+                  <div className="alert">DRINK</div>
+                )}
+                {!gameOver && bitesSincePoop === 5 && (
+                  <div className="alert">POOP</div>
+                )}
+                {!gameOver && bitesSincePoop !== 5 && bitesSinceWater !== 2 && (
+                  <div className="alert">EAT</div>
+                )}
+              </div>
+            </div>
+          )}
+
           <Sidebar
             isOpen={showSidebar}
             onClose={() => setShowSidebar(false)}
@@ -602,20 +729,6 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
             </svg>
           </button>
         </>
-      )}
-
-      {gameStarted && (
-        <div className="alerts-container">
-          {!gameOver && bitesSinceWater === 2 && (
-            <div className="alert">DRINK</div>
-          )}
-          {!gameOver && bitesSincePoop === 5 && (
-            <div className="alert">POOP</div>
-          )}
-          {!gameOver && bitesSincePoop !== 5 && bitesSinceWater !== 2 && (
-            <div className="alert">EAT</div>
-          )}
-        </div>
       )}
 
       {gameStarted && (
@@ -700,7 +813,11 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
                 } else if (isCommode) {
                   content = (
                     <span className="emoji">
-                      <img src="/drop.png" alt="Water" className="w-6 h-6" />
+                      <img
+                        src="/comode.png"
+                        alt="Commode"
+                        className="w-6 h-6"
+                      />
                     </span>
                   );
                 }

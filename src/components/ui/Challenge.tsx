@@ -38,9 +38,13 @@ type Challenge = {
 
 interface ChallengeProps {
   isEmbedded?: boolean;
+  setShowCreateChallenge?: (show: boolean) => void;
 }
 
-const Challenge: React.FC<ChallengeProps> = ({ isEmbedded = false }) => {
+const Challenge: React.FC<ChallengeProps> = ({
+  isEmbedded = false,
+  setShowCreateChallenge,
+}) => {
   const { context } = useMiniApp();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<User[]>([]);
@@ -198,6 +202,7 @@ const Challenge: React.FC<ChallengeProps> = ({ isEmbedded = false }) => {
         const link = `${APP_URL}/challenge/${data.challengeId}`;
         setChallengeLink(link);
         setShowChallengeModal(true);
+        setShowCreateChallenge?.(false);
       }
     } catch (error) {
       console.error("Error creating challenge:", error);

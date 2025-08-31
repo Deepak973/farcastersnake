@@ -71,22 +71,22 @@ export const LeaderboardComponent: React.FC<LeaderboardComponentProps> = ({
                     : "bg-white border-deep-pink"
                 }`}
               >
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-deep-pink text-soft-pink font-bold text-sm mr-3">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-deep-pink text-soft-pink font-bold text-sm mr-3 flex-shrink-0">
                   {index + 1}
                 </div>
                 <img
                   src={entry.profileImage || "/farcaster.webp"}
                   alt={entry.username}
-                  className="w-8 h-8 rounded-full border-2 border-deep-pink mr-3"
+                  className="w-8 h-8 rounded-full border-2 border-deep-pink mr-3 flex-shrink-0"
                 />
-                <div className="flex-1">
-                  <h3 className="font-bold text-black text-sm">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-black text-sm truncate">
                     {entry.username}
                   </h3>
                   <p className="text-gray-600 text-xs">Score: {entry.score}</p>
                 </div>
                 {index < 3 && (
-                  <div className="text-lg">
+                  <div className="text-lg flex-shrink-0">
                     {index === 0 ? "🥇" : index === 1 ? "🥈" : "🥉"}
                   </div>
                 )}

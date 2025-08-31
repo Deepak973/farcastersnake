@@ -11,7 +11,7 @@ export const RulesComponent: React.FC<RulesComponentProps> = ({ onClose }) => {
       <div className="max-w-2xl mx-auto">
         <div className="relative inline-block mb-6">
           <img
-            src="/logo.jpg"
+            src="/logo.png"
             alt="Farcaster Snake"
             className="absolute left-0 top-1 w-6 h-6"
           />

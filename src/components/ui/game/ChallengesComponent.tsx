@@ -2,6 +2,8 @@
 import React, { useEffect, useState } from "react";
 import { useMiniApp } from "@neynar/react";
 import Challenge from "../Challenge";
+import { ShareButton } from "../Share";
+import { APP_URL } from "~/lib/constants";
 
 interface ChallengeData {
   id: string;
@@ -44,6 +46,29 @@ export const ChallengesComponent: React.FC<ChallengesComponentProps> = ({
   const [showCreateChallenge, setShowCreateChallenge] = useState(false);
   const { context } = useMiniApp();
 
+  // Generate challenge share text
+  const generateChallengeShareText = (challenge: ChallengeData) => {
+    const currentUser = context?.user;
+    const isCurrentUserChallenger =
+      challenge.challenger.fid === currentUser?.fid;
+
+    if (isCurrentUserChallenger) {
+      // Current user is the challenger, tag the challenged person
+      return `⚔️ I challenged @${
+        challenge.challenged.username
+      } to beat my score of ${
+        challenge.challenger.score || 0
+      } in Farcaster Snake! Can you beat it? 🐍`;
+    } else {
+      // Current user is the challenged person, tag the challenger
+      return `⚔️ @${
+        challenge.challenger.username
+      } challenged me to beat their score of ${
+        challenge.challenger.score || 0
+      } in Farcaster Snake! Let's see who wins! 🐍`;
+    }
+  };
+
   useEffect(() => {
     const fetchChallenges = async () => {
       if (!context?.user?.fid) return;
@@ -63,7 +88,7 @@ export const ChallengesComponent: React.FC<ChallengesComponentProps> = ({
     };
 
     fetchChallenges();
-  }, [context?.user?.fid]);
+  }, [context?.user?.fid, showCreateChallenge]);
 
   const isChallengeExpired = (expiresAt: string) => {
     return new Date(expiresAt) < new Date();
@@ -138,7 +163,10 @@ export const ChallengesComponent: React.FC<ChallengesComponentProps> = ({
 
         {showCreateChallenge && (
           <div className="bg-white rounded-lg p-4 shadow-lg mb-6">
-            <Challenge isEmbedded={true} />
+            <Challenge
+              isEmbedded={true}
+              setShowCreateChallenge={setShowCreateChallenge}
+            />
           </div>
         )}
 
@@ -167,6 +195,7 @@ export const ChallengesComponent: React.FC<ChallengesComponentProps> = ({
                 >
                   {/* Challenge Header */}
                   <div className="flex items-center justify-between mb-4">
+                    {/* Challenger */}
                     <div className="flex items-center gap-3">
                       <img
                         src={challenge.challenger.pfpUrl}
@@ -178,23 +207,25 @@ export const ChallengesComponent: React.FC<ChallengesComponentProps> = ({
                           {challenge.challenger.displayName}
                         </h4>
                         <p className="text-xs text-gray-600">
-                          Score: {challenge.challenger.score || 0}{" "}
-                          {!challenge.challenger.score && "(Not played)"}
+                          Score: {challenge.challenger.score || 0}
                         </p>
                       </div>
                     </div>
+
+                    {/* VS */}
                     <div className="text-center">
                       <div className="text-xl">⚔️</div>
                       <div className="text-xs text-gray-600 font-bold">VS</div>
                     </div>
+
+                    {/* Challenged */}
                     <div className="flex items-center gap-3">
                       <div className="text-right">
                         <h4 className="font-bold text-black text-sm">
                           {challenge.challenged.displayName}
                         </h4>
                         <p className="text-xs text-gray-600">
-                          Score: {challenge.challenged.score || 0}{" "}
-                          {!challenge.challenged.score && "(Not played)"}
+                          Score: {challenge.challenged.score || 0}
                         </p>
                       </div>
                       <img
@@ -261,21 +292,56 @@ export const ChallengesComponent: React.FC<ChallengesComponentProps> = ({
                       )}
                   </div>
 
+                  {/* Challenge Link */}
+                  {challenge.status === "active" &&
+                    !isChallengeExpired(challenge.expiresAt) && (
+                      <div className="mb-3 p-3 bg-gray-100 rounded-lg">
+                        <div className="flex items-center justify-between flex-wrap gap-2">
+                          <span className="text-xs text-gray-600 font-bold">
+                            Challenge Link:
+                          </span>
+                          <button
+                            onClick={() => {
+                              const challengeUrl = `${window.location.origin}/challenge/${challenge.id}`;
+                              navigator.clipboard.writeText(challengeUrl);
+                              alert("Challenge link copied to clipboard!");
+                            }}
+                            className="bg-deep-pink text-soft-pink px-2 py-1 rounded text-xs font-bold hover:bg-bright-pink transition-colors"
+                          >
+                            📋 Copy Link
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
                   {/* Action Buttons */}
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                     <div className="text-xs text-gray-500">
                       Created:{" "}
                       {new Date(challenge.createdAt).toLocaleDateString()}
                     </div>
-                    <div className="space-x-2">
+                    <div className="flex flex-wrap gap-2">
                       {challenge.status === "active" &&
                         !isChallengeExpired(challenge.expiresAt) && (
-                          <a
-                            href={`/challenge/${challenge.id}`}
-                            className="inline-block bg-bright-pink text-soft-pink px-3 py-1 rounded font-bold text-xs hover:bg-deep-pink transition-colors"
-                          >
-                            🎮 Play Challenge
-                          </a>
+                          <>
+                            <a
+                              href={`/challenge/${challenge.id}`}
+                              className="inline-block bg-bright-pink text-soft-pink px-3 py-1 rounded font-bold text-xs hover:bg-deep-pink transition-colors text-center"
+                            >
+                              Play
+                            </a>
+                            <ShareButton
+                              buttonText="Share"
+                              cast={{
+                                text: generateChallengeShareText(challenge),
+                                bestFriends: true,
+                                embeds: [
+                                  `${APP_URL}/challenge/${challenge.id}`,
+                                ],
+                              }}
+                              className="inline-block bg-deep-pink text-soft-pink px-3 py-1 rounded font-bold text-xs hover:bg-bright-pink transition-colors text-center"
+                            />
+                          </>
                         )}
                       {challenge.winner && (
                         <div className="text-xs text-green-600 font-bold">

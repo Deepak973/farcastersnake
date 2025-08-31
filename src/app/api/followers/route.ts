@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const fid = searchParams.get("fid") || "673126"; // Default FID if none provided
+  const fid = searchParams.get("fid"); // Default FID if none provided
 
-  const url = `https://api.neynar.com/v2/farcaster/followers/?limit=20&fid=${fid}`;
+  const url = `https://api.neynar.com/v2/farcaster/followers/?limit=100&fid=${fid}`;
   const options = {
     method: "GET",
     headers: {

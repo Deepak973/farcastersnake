@@ -40,6 +40,9 @@ const ChallengePage: React.FC = () => {
   const [_finalScore, setFinalScore] = useState<number | null>(null);
   const [_submitting, setSubmitting] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
+  const [previousBestScore, setPreviousBestScore] = useState<number | null>(
+    null
+  );
 
   useEffect(() => {
     const fetchChallenge = async () => {
@@ -59,13 +62,49 @@ const ChallengePage: React.FC = () => {
       }
     };
 
+    const fetchPreviousBestScore = async () => {
+      if (!context?.user?.fid && !context?.user?.username) return;
+
+      try {
+        const params = new URLSearchParams();
+        if (context.user.fid) params.append("fid", context.user.fid.toString());
+        if (context.user.username)
+          params.append("username", context.user.username);
+
+        const response = await fetch(`/api/leaderboard?${params}`);
+        const data = await response.json();
+
+        if (data.scores && data.scores.length > 0) {
+          setPreviousBestScore(data.scores[0].score);
+        }
+      } catch (error) {
+        console.error("Failed to fetch previous best score:", error);
+      }
+    };
+
     if (params.id) {
       fetchChallenge();
     }
-  }, [params.id]);
+    fetchPreviousBestScore();
+  }, [params.id, context?.user?.fid, context?.user?.username]);
 
   const submitScore = async (score: number) => {
     if (!challenge || !context?.user) return;
+
+    // Only submit if score is higher than previous best or if no previous score exists
+    if (previousBestScore !== null && score <= previousBestScore) {
+      console.log(
+        `Score ${score} not submitted - previous best is ${previousBestScore}`
+      );
+
+      // Show appropriate message
+      if (score === previousBestScore) {
+        alert(`🏆 Tied your best score of ${score} points!`);
+      } else {
+        alert(`📊 Score: ${score} points (your best is ${previousBestScore})`);
+      }
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -107,6 +146,20 @@ const ChallengePage: React.FC = () => {
               `📊 Score submitted: ${score} points (your best is ${currentScore})`
             );
           }
+        } else {
+          // First time submitting
+          if (previousBestScore !== null && score > previousBestScore) {
+            alert(
+              `🎉 New personal best! You beat your previous best of ${previousBestScore} with ${score} points!`
+            );
+          } else if (previousBestScore === null) {
+            alert(`🎉 First score submitted: ${score} points!`);
+          }
+        }
+
+        // Update previous best score if this is a new high score
+        if (previousBestScore === null || score > previousBestScore) {
+          setPreviousBestScore(score);
         }
       }
     } catch (error) {
@@ -324,6 +377,38 @@ const ChallengePage: React.FC = () => {
                 {formatTimeRemaining(challenge.expiresAt)}
               </div>
             </div>
+
+            {/* Previous Best Score */}
+            {previousBestScore !== null &&
+              (isCurrentUserChallenger || isCurrentUserChallenged) && (
+                <div className="text-center bg-gray-100 p-3 rounded-xl">
+                  <div className="text-black font-bold text-sm mb-1">
+                    Your Previous Best Score
+                  </div>
+                  <div className="text-bright-pink font-bold text-lg">
+                    {previousBestScore} pts
+                  </div>
+                </div>
+              )}
+
+            {/* Current Challenge Score */}
+            {_finalScore !== null &&
+              (isCurrentUserChallenger || isCurrentUserChallenged) && (
+                <div className="text-center bg-blue-100 p-3 rounded-xl">
+                  <div className="text-black font-bold text-sm mb-1">
+                    Current Challenge Score
+                  </div>
+                  <div className="text-bright-pink font-bold text-lg">
+                    {_finalScore} pts
+                  </div>
+                  {previousBestScore !== null &&
+                    _finalScore > previousBestScore && (
+                      <div className="text-green-600 font-bold text-sm mt-1">
+                        🎉 New Personal Best!
+                      </div>
+                    )}
+                </div>
+              )}
 
             {/* Winner */}
             {challenge.status === "completed" && challenge.winner && (

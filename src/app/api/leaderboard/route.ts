@@ -43,7 +43,6 @@ export async function GET(request: Request) {
         .collection("scores")
         .find()
         .sort({ score: -1 })
-        .limit(10)
         .toArray();
 
       console.log("Found scores:", scores.length);
