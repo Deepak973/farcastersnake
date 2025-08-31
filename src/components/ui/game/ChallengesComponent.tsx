@@ -336,7 +336,7 @@ export const ChallengesComponent: React.FC<ChallengesComponentProps> = ({
                                 text: generateChallengeShareText(challenge),
                                 bestFriends: true,
                                 embeds: [
-                                  `${APP_URL}/challenge/${challenge.id}`,
+                                  `${window.location.origin}/challenge/${challenge.id}`,
                                 ],
                               }}
                               className="inline-block bg-deep-pink text-soft-pink px-3 py-1 rounded font-bold text-xs hover:bg-bright-pink transition-colors text-center"
