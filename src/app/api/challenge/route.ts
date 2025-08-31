@@ -1,12 +1,17 @@
 import { NextResponse } from "next/server";
+import { MongoClient } from "mongodb";
 
-// In-memory challenge storage (in production, use a proper database)
-const challengeStore = new Map<string, any>();
+const client = new MongoClient(process.env.MONGODB_URI!);
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { action, challengeId, challenger, challenged, score } = body;
+
+    // Connect to MongoDB
+    await client.connect();
+    const db = client.db("farcaster-snake");
+    const collection = db.collection("challenges");
 
     switch (action) {
       case "create":
@@ -36,11 +41,16 @@ export async function POST(request: Request) {
           status: "active",
         };
 
-        challengeStore.set(newChallengeId, challenge);
+        // Store in MongoDB
+        await collection.insertOne(challenge);
+        console.log(
+          "Challenge created and stored in database:",
+          newChallengeId
+        );
         return NextResponse.json({ challengeId: newChallengeId, challenge });
 
       case "submit":
-        const existingChallenge = challengeStore.get(challengeId);
+        const existingChallenge = await collection.findOne({ id: challengeId });
         if (!existingChallenge) {
           return NextResponse.json(
             { error: "Challenge not found" },
@@ -48,13 +58,14 @@ export async function POST(request: Request) {
           );
         }
 
-        const challengeData = existingChallenge;
         const now = new Date().toISOString();
 
         // Check if challenge is expired
-        if (new Date(challengeData.expiresAt) < new Date()) {
-          challengeData.status = "expired";
-          challengeStore.set(challengeId, challengeData);
+        if (new Date(existingChallenge.expiresAt) < new Date()) {
+          await collection.updateOne(
+            { id: challengeId },
+            { $set: { status: "expired" } }
+          );
           return NextResponse.json(
             { error: "Challenge has expired" },
             { status: 400 }
@@ -62,30 +73,108 @@ export async function POST(request: Request) {
         }
 
         // Update the appropriate player's score
-        if (challengeData.challenger.fid === challenger.fid) {
-          challengeData.challenger.score = score;
-          challengeData.challenger.submittedAt = now;
-        } else if (challengeData.challenged.fid === challenger.fid) {
-          challengeData.challenged.score = score;
-          challengeData.challenged.submittedAt = now;
+        const updateData: any = {};
+        if (existingChallenge.challenger.fid === challenger.fid) {
+          updateData["challenger.score"] = score;
+          updateData["challenger.submittedAt"] = now;
+        } else if (existingChallenge.challenged.fid === challenger.fid) {
+          updateData["challenged.score"] = score;
+          updateData["challenged.submittedAt"] = now;
+        }
+
+        // Also update the leaderboard with the challenge score
+        try {
+          const scoresCollection = db.collection("scores");
+          const existingScore = await scoresCollection.findOne({
+            $or: [{ fid: challenger.fid }, { username: challenger.username }],
+          });
+
+          if (existingScore) {
+            // Update existing score if challenge score is higher
+            if (score > existingScore.score) {
+              await scoresCollection.updateOne(
+                {
+                  $or: [
+                    { fid: challenger.fid },
+                    { username: challenger.username },
+                  ],
+                },
+                {
+                  $set: {
+                    score: score,
+                    username: challenger.username,
+                    displayName: challenger.displayName,
+                    pfpUrl: challenger.pfpUrl,
+                    fid: challenger.fid,
+                    timestamp: new Date(),
+                  },
+                }
+              );
+              console.log(
+                `Updated leaderboard score for ${challenger.username} to ${score}`
+              );
+            }
+          } else {
+            // Insert new score if user doesn't exist in leaderboard
+            await scoresCollection.insertOne({
+              score: score,
+              username: challenger.username,
+              displayName: challenger.displayName,
+              pfpUrl: challenger.pfpUrl,
+              fid: challenger.fid,
+              timestamp: new Date(),
+            });
+            console.log(
+              `Added new leaderboard score for ${challenger.username}: ${score}`
+            );
+          }
+        } catch (leaderboardError) {
+          console.error("Error updating leaderboard:", leaderboardError);
+          // Continue with challenge update even if leaderboard update fails
         }
 
         // Check if both players have submitted
-        if (
-          challengeData.challenger.submittedAt &&
-          challengeData.challenged.submittedAt
-        ) {
-          challengeData.status = "completed";
-          challengeData.winner =
-            challengeData.challenger.score > challengeData.challenged.score
-              ? "challenger"
-              : challengeData.challenged.score > challengeData.challenger.score
-              ? "challenged"
-              : "tie";
+        const updatedChallenge = await collection.findOneAndUpdate(
+          { id: challengeId },
+          { $set: updateData },
+          { returnDocument: "after" }
+        );
+
+        if (updatedChallenge) {
+          const challengeData = updatedChallenge;
+
+          // Check if both players have submitted
+          if (
+            challengeData.challenger.submittedAt &&
+            challengeData.challenged.submittedAt
+          ) {
+            const winner =
+              challengeData.challenger.score > challengeData.challenged.score
+                ? "challenger"
+                : challengeData.challenged.score >
+                  challengeData.challenger.score
+                ? "challenged"
+                : "tie";
+
+            await collection.updateOne(
+              { id: challengeId },
+              { $set: { status: "completed", winner } }
+            );
+
+            // Get final updated challenge
+            const finalChallenge = await collection.findOne({
+              id: challengeId,
+            });
+            return NextResponse.json({ challenge: finalChallenge });
+          }
+
+          return NextResponse.json({ challenge: challengeData });
         }
 
-        challengeStore.set(challengeId, challengeData);
-        return NextResponse.json({ challenge: challengeData });
+        return NextResponse.json(
+          { error: "Failed to update challenge" },
+          { status: 500 }
+        );
 
       default:
         return NextResponse.json({ error: "Invalid action" }, { status: 400 });
@@ -105,8 +194,13 @@ export async function GET(request: Request) {
   const fid = searchParams.get("fid");
 
   try {
+    // Connect to MongoDB
+    await client.connect();
+    const db = client.db("farcaster-snake");
+    const collection = db.collection("challenges");
+
     if (challengeId) {
-      const challenge = challengeStore.get(challengeId);
+      const challenge = await collection.findOne({ id: challengeId });
       if (!challenge) {
         return NextResponse.json(
           { error: "Challenge not found" },
@@ -118,11 +212,16 @@ export async function GET(request: Request) {
 
     if (fid) {
       // Get all challenges for a specific FID (both as challenger and challenged)
-      const userChallenges = Array.from(challengeStore.values()).filter(
-        (challenge) =>
-          challenge.challenger.fid === fid || challenge.challenged.fid === fid
-      );
+      const userChallenges = await collection
+        .find({
+          $or: [
+            { "challenger.fid": parseInt(fid) },
+            { "challenged.fid": parseInt(fid) },
+          ],
+        })
+        .toArray();
 
+      console.log(`Found ${userChallenges.length} challenges for FID ${fid}`);
       return NextResponse.json({ challenges: userChallenges });
     }
 

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { useMiniApp } from "@neynar/react";
 import SnakeGame from "~/components/ui/game/SnakeGame";
+import Sidebar from "~/components/ui/Sidebar";
 
 type Challenge = {
   id: string;
@@ -38,6 +39,7 @@ const ChallengePage: React.FC = () => {
   const [showGame, setShowGame] = useState(false);
   const [_finalScore, setFinalScore] = useState<number | null>(null);
   const [_submitting, setSubmitting] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(false);
 
   useEffect(() => {
     const fetchChallenge = async () => {
@@ -126,6 +128,20 @@ const ChallengePage: React.FC = () => {
     return `${hours}h ${minutes}m remaining`;
   };
 
+  const handleSidebarAction = (action: string) => {
+    if (action === "game") {
+      // Stay on current challenge page
+      setShowSidebar(false);
+    } else if (action === "leaderboard") {
+      window.location.href = "/leaderboard";
+    } else if (action === "rules") {
+      window.location.href = "/rules";
+    } else if (action === "challenges") {
+      window.location.href = "/challenges";
+    }
+    setShowSidebar(false);
+  };
+
   const isCurrentUserChallenger =
     challenge?.challenger.fid === context?.user?.fid;
   const isCurrentUserChallenged =
@@ -161,6 +177,45 @@ const ChallengePage: React.FC = () => {
   if (showGame) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-deep-pink to-black">
+        <Sidebar
+          isOpen={showSidebar}
+          onClose={() => setShowSidebar(false)}
+          onAction={handleSidebarAction}
+        />
+        <button
+          onClick={() => setShowSidebar(true)}
+          className="absolute top-4 right-4 bg-bright-pink text-soft-pink p-2 rounded-lg hover:bg-deep-pink transition-colors z-10"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M3 12H21"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M3 6H21"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M3 18H21"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
         <SnakeGame
           onGameOver={(score) => {
             setShowGame(false);
@@ -173,6 +228,45 @@ const ChallengePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-deep-pink to-black p-4">
+      <Sidebar
+        isOpen={showSidebar}
+        onClose={() => setShowSidebar(false)}
+        onAction={handleSidebarAction}
+      />
+      <button
+        onClick={() => setShowSidebar(true)}
+        className="absolute top-4 right-4 bg-bright-pink text-soft-pink p-2 rounded-lg hover:bg-deep-pink transition-colors z-10"
+      >
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M3 12H21"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M3 6H21"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M3 18H21"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
       <div className="max-w-md mx-auto">
         <div className="bg-soft-pink rounded-2xl p-6 border-2 border-deep-pink shadow-2xl">
           <h1 className="text-deep-pink text-2xl font-bold text-center mb-6">

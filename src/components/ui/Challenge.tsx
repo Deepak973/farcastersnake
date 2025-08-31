@@ -152,6 +152,23 @@ const Challenge: React.FC<ChallengeProps> = ({ isEmbedded = false }) => {
         console.error("Error fetching latest score:", error);
       }
 
+      console.log("Creating challenge with data:", {
+        challenger: {
+          fid: context.user.fid,
+          username: context.user.username,
+          displayName: context.user.displayName,
+          pfpUrl: context.user.pfpUrl,
+          score: currentScore,
+        },
+        challenged: {
+          fid: selectedUser.fid,
+          username: selectedUser.username,
+          displayName: selectedUser.displayName,
+          pfpUrl: selectedUser.pfpUrl,
+          score: 0,
+        },
+      });
+
       const response = await fetch("/api/challenge", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -174,7 +191,9 @@ const Challenge: React.FC<ChallengeProps> = ({ isEmbedded = false }) => {
         }),
       });
 
+      console.log("Challenge creation response status:", response.status);
       const data = await response.json();
+      console.log("Challenge creation response data:", data);
       if (data.challengeId) {
         const link = `${APP_URL}/challenge/${data.challengeId}`;
         setChallengeLink(link);
@@ -265,7 +284,7 @@ const Challenge: React.FC<ChallengeProps> = ({ isEmbedded = false }) => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Enter username..."
-                  className="flex-1 px-3 py-2 border-2 border-deep-pink rounded-lg focus:outline-none focus:border-bright-pink"
+                  className="flex-1 px-3 py-2 border-2 text-black border-deep-pink rounded-lg focus:outline-none focus:border-bright-pink"
                   onKeyPress={(e) => {
                     if (e.key === "Enter") {
                       searchUsers();
@@ -295,8 +314,8 @@ const Challenge: React.FC<ChallengeProps> = ({ isEmbedded = false }) => {
                     key={user.fid}
                     className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
                       selectedUser?.fid === user.fid
-                        ? "bg-bright-pink text-soft-pink"
-                        : "bg-white hover:bg-gray-100"
+                        ? "bg-bright-pink text-black"
+                        : "bg-white hover:bg-gray-100 text-black"
                     }`}
                     onClick={() => setSelectedUser(user)}
                   >

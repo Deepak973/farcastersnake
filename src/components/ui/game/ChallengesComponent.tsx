@@ -49,8 +49,11 @@ export const ChallengesComponent: React.FC<ChallengesComponentProps> = ({
       if (!context?.user?.fid) return;
 
       try {
+        console.log("Fetching challenges for FID:", context.user.fid);
         const response = await fetch(`/api/challenge?fid=${context.user.fid}`);
+        console.log("Challenges response status:", response.status);
         const data = await response.json();
+        console.log("Challenges response data:", data);
         setActiveChallenges(data.challenges || []);
       } catch (error) {
         console.error("Failed to fetch challenges:", error);

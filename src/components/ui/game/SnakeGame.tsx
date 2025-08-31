@@ -165,6 +165,8 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
         if (prev.some((cell) => cell.x === newHead.x && cell.y === newHead.y)) {
           setGameOver(true);
           playSound(gameOverSound);
+          // Auto-submit score to leaderboard
+          autoSubmitScore();
           if (onGameOver) {
             onGameOver(score);
           }
@@ -196,6 +198,8 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
           if (bitesSinceWater >= 2 || bitesSincePoop >= 5) {
             setGameOver(true);
             playSound(gameOverSound);
+            // Auto-submit score to leaderboard
+            autoSubmitScore();
             if (onGameOver) {
               onGameOver(score);
             }
@@ -265,19 +269,34 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
 
   const submitScore = async (address: string, score: number) => {
     setScoreSubmitting(true);
-    const res = await fetch("/api/submit-score", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        address: address,
-        username: context?.user?.username || "anon",
-        score,
-        profileImage: context?.user?.pfpUrl || "",
-        fid: context?.user?.fid || null,
-      }),
-    });
-    await res.json();
-    setScoreSubmitting(false);
+    try {
+      const res = await fetch("/api/submit-score", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          address: address,
+          username: context?.user?.username || "anon",
+          score,
+          profileImage: context?.user?.pfpUrl || "",
+          fid: context?.user?.fid || null,
+        }),
+      });
+      const data = await res.json();
+      console.log("Score submitted successfully:", data);
+      setScoreSubmitted(true);
+    } catch (error) {
+      console.error("Error submitting score:", error);
+    } finally {
+      setScoreSubmitting(false);
+    }
+  };
+
+  // Auto-submit score when game ends
+  const autoSubmitScore = async () => {
+    if (address && score > 0 && !scoreSubmitted) {
+      console.log("Auto-submitting score:", score);
+      await submitScore(address, score);
+    }
   };
 
   const handleRestart = () => {
@@ -399,16 +418,17 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
           </p>
         </div>
         <div className="space-y-3">
-          <button
-            className="w-full bg-bright-pink text-soft-pink py-3 px-4 rounded-xl font-bold hover:bg-deep-pink transition-colors"
-            onClick={async () => {
-              await submitScore(address as string, score);
-              setScoreSubmitted(true);
-            }}
-            disabled={scoreSubmitted || scoreSubmitting}
-          >
-            {scoreSubmitted ? "✅ Submitted" : "Submit Score"}
-          </button>
+          {!scoreSubmitted && (
+            <button
+              className="w-full bg-bright-pink text-soft-pink py-3 px-4 rounded-xl font-bold hover:bg-deep-pink transition-colors"
+              onClick={async () => {
+                await submitScore(address as string, score);
+              }}
+              disabled={scoreSubmitting}
+            >
+              {scoreSubmitting ? "Submitting..." : "Submit Score"}
+            </button>
+          )}
           <button
             className="w-full bg-deep-pink text-soft-pink py-3 px-4 rounded-xl font-bold hover:bg-bright-pink transition-colors"
             onClick={handleRestart}
@@ -419,7 +439,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
         {scoreSubmitted && (
           <div className="mt-4 text-center">
             <div className="text-green-600 font-bold mb-3">
-              🎉 Score submitted successfully!
+              🎉 Score automatically submitted to leaderboard!
             </div>
             <ShareButton
               buttonText="Share Score"
@@ -447,9 +467,37 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
         />
         <button
           onClick={() => setShowSidebar(true)}
-          className="absolute top-4 right-4 bg-bright-pink text-soft-pink px-3 py-1 rounded-lg font-bold text-sm hover:bg-deep-pink transition-colors z-10"
+          className="absolute top-4 right-4 bg-bright-pink text-soft-pink p-2 rounded-lg hover:bg-deep-pink transition-colors z-10"
         >
-          ☰
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M3 12H21"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M3 6H21"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M3 18H21"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </button>
 
         {activeComponent === "leaderboard" && (
@@ -477,9 +525,37 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
           />
           <button
             onClick={() => setShowSidebar(true)}
-            className="absolute top-4 right-4 bg-bright-pink text-soft-pink px-3 py-1 rounded-lg font-bold text-sm hover:bg-deep-pink transition-colors z-10"
+            className="absolute top-4 right-4 bg-bright-pink text-soft-pink p-2 rounded-lg hover:bg-deep-pink transition-colors z-10"
           >
-            ☰
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M3 12H21"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M3 6H21"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M3 18H21"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </button>
         </>
       ) : (
@@ -493,9 +569,37 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
           />
           <button
             onClick={() => setShowSidebar(true)}
-            className="absolute top-4 right-4 bg-bright-pink text-soft-pink px-3 py-1 rounded-lg font-bold text-sm hover:bg-deep-pink transition-colors z-10"
+            className="absolute top-4 right-4 bg-bright-pink text-soft-pink p-2 rounded-lg hover:bg-deep-pink transition-colors z-10"
           >
-            ☰
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M3 12H21"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M3 6H21"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M3 18H21"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </button>
         </>
       )}
@@ -626,7 +730,8 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
               <path d="M12 8L16 12L12 16L8 12L12 8Z" fill="white" />
             </svg>
           </button>
-          <div>
+
+          <div className="flex items-center justify-center space-x-10">
             <button onClick={() => setDirection({ x: -1, y: 0 })}>
               <svg
                 width="24"
@@ -652,6 +757,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
               </svg>
             </button>
           </div>
+
           <button onClick={() => setDirection({ x: 0, y: 1 })}>
             <svg
               width="24"
