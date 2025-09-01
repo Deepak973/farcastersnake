@@ -1,52 +1,48 @@
-// app/api/submitScore/route.ts
-import { NextResponse } from "next/server";
-import { MongoClient } from "mongodb";
-import { withCors } from "~/lib/cors";
+import { NextRequest, NextResponse } from "next/server";
 
-const client = new MongoClient(process.env.MONGODB_URI!);
+// Allowed origin - only your domain
+const ALLOWED_ORIGIN = "https://farcastersnake.vercel.app";
 
-async function handler(req: Request) {
-  try {
-    const { username, score, address, profileImage, fid } = await req.json();
+export function withCors(
+  handler: (request: NextRequest) => Promise<NextResponse>
+) {
+  return async (request: NextRequest): Promise<NextResponse> => {
+    const origin = request.headers.get("origin");
 
-    if (!username || score == null) {
-      return NextResponse.json({ error: "Missing fields" }, { status: 400 });
-    }
-
-    await client.connect();
-    const db = client.db("farcaster-snake");
-    const collection = db.collection("scores");
-
-    const existing = await collection.findOne({ username });
-
-    if (!existing) {
-      await collection.insertOne({
-        address,
-        username,
-        score,
-        profileImage,
-        fid: fid || null,
-        timestamp: new Date(),
-      });
-    } else if (score > existing.score) {
-      await collection.updateOne(
-        { username },
-        {
-          $set: {
-            score,
-            username,
-            fid: fid || existing.fid,
-            timestamp: new Date(),
-          },
-        }
+    // Block requests without origin OR from unauthorized origins
+    if (!origin || origin !== ALLOWED_ORIGIN) {
+      return NextResponse.json(
+        { error: "Access denied - unauthorized origin" },
+        { status: 403 }
       );
     }
 
-    return NextResponse.json({ message: "Score handled!" });
-  } catch (e) {
-    console.error(e);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
-  }
-}
+    // Handle preflight requests
+    if (request.method === "OPTIONS") {
+      return new NextResponse(null, {
+        status: 200,
+        headers: {
+          "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
+          "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        },
+      });
+    }
 
-export const POST = withCors(handler);
+    // Process the actual request
+    const response = await handler(request);
+
+    // Add CORS headers to the response
+    response.headers.set("Access-Control-Allow-Origin", ALLOWED_ORIGIN);
+    response.headers.set(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, DELETE, OPTIONS"
+    );
+    response.headers.set(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization"
+    );
+
+    return response;
+  };
+}
