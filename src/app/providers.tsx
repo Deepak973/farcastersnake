@@ -1,13 +1,14 @@
-'use client';
+"use client";
 
-import dynamic from 'next/dynamic';
-import { MiniAppProvider } from '@neynar/react';
-import { SafeFarcasterSolanaProvider } from '~/components/providers/SafeFarcasterSolanaProvider';
-import { ANALYTICS_ENABLED } from '~/lib/constants';
-import React, { useState, useEffect } from 'react';
+import dynamic from "next/dynamic";
+import { MiniAppProvider } from "@neynar/react";
+import { SafeFarcasterSolanaProvider } from "~/components/providers/SafeFarcasterSolanaProvider";
+import { ANALYTICS_ENABLED } from "~/lib/constants";
+import React, { useState, useEffect } from "react";
+import { ToastProvider } from "~/components/ui/Toast";
 
 const WagmiProvider = dynamic(
-  () => import('~/components/providers/WagmiProvider'),
+  () => import("~/components/providers/WagmiProvider"),
   {
     ssr: false,
   }
@@ -50,17 +51,17 @@ function AuthProviders({
         let AuthKitProvider = null;
 
         try {
-          const nextAuth = await import('next-auth/react');
+          const nextAuth = await import("next-auth/react");
           SessionProvider = nextAuth.SessionProvider;
         } catch (error) {
-          console.warn('NextAuth not available:', error);
+          console.warn("NextAuth not available:", error);
         }
 
         try {
-          const authKit = await import('@farcaster/auth-kit');
+          const authKit = await import("@farcaster/auth-kit");
           AuthKitProvider = authKit.AuthKitProvider;
         } catch (error) {
-          console.warn('Farcaster AuthKit not available:', error);
+          console.warn("Farcaster AuthKit not available:", error);
         }
 
         setAuthComponents({
@@ -69,7 +70,7 @@ function AuthProviders({
           loaded: true,
         });
       } catch (error) {
-        console.error('Error loading auth components:', error);
+        console.error("Error loading auth components:", error);
         setAuthComponents({
           SessionProvider: null,
           AuthKitProvider: null,
@@ -112,7 +113,7 @@ export function Providers({
   shouldUseSession?: boolean;
 }) {
   const solanaEndpoint =
-    process.env.SOLANA_RPC_ENDPOINT || 'https://solana-rpc.publicnode.com';
+    process.env.SOLANA_RPC_ENDPOINT || "https://solana-rpc.publicnode.com";
 
   return (
     <WagmiProvider>
@@ -122,7 +123,7 @@ export function Providers({
       >
         <SafeFarcasterSolanaProvider endpoint={solanaEndpoint}>
           <AuthProviders session={session} shouldUseSession={shouldUseSession}>
-            {children}
+            <ToastProvider>{children}</ToastProvider>
           </AuthProviders>
         </SafeFarcasterSolanaProvider>
       </MiniAppProvider>

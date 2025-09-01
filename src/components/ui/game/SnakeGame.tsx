@@ -5,6 +5,7 @@ import { useAccount } from "wagmi";
 import { useMiniApp } from "@neynar/react";
 import { ShareButton } from "../Share";
 import { APP_URL } from "~/lib/constants";
+import { useToast } from "../Toast";
 
 import Sidebar from "../Sidebar";
 import { LeaderboardComponent } from "./LeaderboardComponent";
@@ -92,6 +93,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
   const moveRef = useRef(direction);
   const { address } = useAccount();
   const { context } = useMiniApp();
+  const { showToast } = useToast();
   const [_isMuted, _setIsMuted] = useState(false);
 
   // Sound refs
@@ -115,6 +117,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
         }
       } catch (error) {
         console.error("Failed to fetch followers:", error);
+        showToast("Failed to load followers", "error");
         // Fallback to default food if API fails
       }
     };
@@ -136,6 +139,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
         }
       } catch (error) {
         console.error("Failed to fetch previous best score:", error);
+        showToast("Failed to load your previous score", "error");
       }
     };
 
@@ -339,9 +343,13 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
       // Update previous best score if this is a new high score
       if (previousBestScore === null || score > previousBestScore) {
         setPreviousBestScore(score);
+        showToast("New personal best submitted!", "success");
+      } else {
+        showToast("Score submitted successfully!", "success");
       }
     } catch (error) {
       console.error("Error submitting score:", error);
+      showToast("Failed to submit score", "error");
     } finally {
       setScoreSubmitting(false);
     }
@@ -511,6 +519,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
             </div>
           )}
         </div>
+        <div className="text-center mb-6"></div>
         <div className="space-y-3">
           {!scoreSubmitted &&
             (previousBestScore === null || score > previousBestScore) && (
@@ -544,7 +553,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
 
         <div className="mt-4">
           <ShareButton
-            buttonText="📤 Share Score"
+            buttonText="Share Score"
             cast={{
               text: generateShareText(),
               bestFriends: true,

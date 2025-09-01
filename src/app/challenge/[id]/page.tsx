@@ -5,6 +5,10 @@ import { useParams } from "next/navigation";
 import { useMiniApp } from "@neynar/react";
 import SnakeGame from "~/components/ui/game/SnakeGame";
 import Sidebar from "~/components/ui/Sidebar";
+import { LeaderboardComponent } from "~/components/ui/game/LeaderboardComponent";
+import { RulesComponent } from "~/components/ui/game/RulesComponent";
+import { ChallengesComponent } from "~/components/ui/game/ChallengesComponent";
+import { useToast } from "~/components/ui/Toast";
 
 type Challenge = {
   id: string;
@@ -33,6 +37,7 @@ type Challenge = {
 const ChallengePage: React.FC = () => {
   const params = useParams();
   const { context } = useMiniApp();
+  const { showToast } = useToast();
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,6 +45,7 @@ const ChallengePage: React.FC = () => {
   const [_finalScore, setFinalScore] = useState<number | null>(null);
   const [_submitting, setSubmitting] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
+  const [activeComponent, setActiveComponent] = useState<string | null>(null);
   const [previousBestScore, setPreviousBestScore] = useState<number | null>(
     null
   );
@@ -66,16 +72,20 @@ const ChallengePage: React.FC = () => {
       if (!context?.user?.fid && !context?.user?.username) return;
 
       try {
-        const params = new URLSearchParams();
-        if (context.user.fid) params.append("fid", context.user.fid.toString());
-        if (context.user.username)
-          params.append("username", context.user.username);
-
-        const response = await fetch(`/api/leaderboard?${params}`);
+        // Get the challenge data to find the user's previous score in this challenge
+        const response = await fetch(`/api/challenge?id=${params.id}`);
         const data = await response.json();
 
-        if (data.scores && data.scores.length > 0) {
-          setPreviousBestScore(data.scores[0].score);
+        if (data.challenge) {
+          const challenge = data.challenge;
+          const currentUserFid = context.user.fid;
+
+          // Check if current user is challenger or challenged
+          if (challenge.challenger.fid === currentUserFid) {
+            setPreviousBestScore(challenge.challenger.score || 0);
+          } else if (challenge.challenged.fid === currentUserFid) {
+            setPreviousBestScore(challenge.challenged.score || 0);
+          }
         }
       } catch (error) {
         console.error("Failed to fetch previous best score:", error);
@@ -91,17 +101,27 @@ const ChallengePage: React.FC = () => {
   const submitScore = async (score: number) => {
     if (!challenge || !context?.user) return;
 
-    // Only submit if score is higher than previous best or if no previous score exists
-    if (previousBestScore !== null && score <= previousBestScore) {
+    // Get current user's score in this challenge
+    const currentUserFid = context.user.fid;
+    const currentScore =
+      challenge.challenger.fid === currentUserFid
+        ? challenge.challenger.score
+        : challenge.challenged.score;
+
+    // Only submit if score is higher than current score in this challenge
+    if (currentScore > 0 && score <= currentScore) {
       console.log(
-        `Score ${score} not submitted - previous best is ${previousBestScore}`
+        `Score ${score} not submitted - current challenge score is ${currentScore}`
       );
 
       // Show appropriate message
-      if (score === previousBestScore) {
-        alert(`🏆 Tied your best score of ${score} points!`);
+      if (score === currentScore) {
+        showToast(`🏆 Tied your challenge score of ${score} points!`, "info");
       } else {
-        alert(`📊 Score: ${score} points (your best is ${previousBestScore})`);
+        showToast(
+          `📊 Score: ${score} points (your challenge best is ${currentScore})`,
+          "info"
+        );
       }
       return;
     }
@@ -136,28 +156,30 @@ const ChallengePage: React.FC = () => {
             : challenge.challenged.score;
 
           if (score > currentScore) {
-            alert(
-              `🎉 New high score! You improved from ${currentScore} to ${score} points!`
+            showToast(
+              `🎉 New challenge high score! You improved from ${currentScore} to ${score} points!`,
+              "success"
             );
           } else if (score === currentScore) {
-            alert(`🏆 Tied your best score of ${score} points!`);
+            showToast(
+              `🏆 Tied your challenge score of ${score} points!`,
+              "info"
+            );
           } else {
-            alert(
-              `📊 Score submitted: ${score} points (your best is ${currentScore})`
+            showToast(
+              `📊 Score submitted: ${score} points (your challenge best is ${currentScore})`,
+              "info"
             );
           }
         } else {
-          // First time submitting
-          if (previousBestScore !== null && score > previousBestScore) {
-            alert(
-              `🎉 New personal best! You beat your previous best of ${previousBestScore} with ${score} points!`
-            );
-          } else if (previousBestScore === null) {
-            alert(`🎉 First score submitted: ${score} points!`);
-          }
+          // First time submitting to this challenge
+          showToast(
+            `🎉 First challenge score submitted: ${score} points!`,
+            "success"
+          );
         }
 
-        // Update previous best score if this is a new high score
+        // Update previous best score if this is a new high score in this challenge
         if (previousBestScore === null || score > previousBestScore) {
           setPreviousBestScore(score);
         }
@@ -184,15 +206,16 @@ const ChallengePage: React.FC = () => {
   const handleSidebarAction = (action: string) => {
     if (action === "game") {
       // Stay on current challenge page
-      setShowSidebar(false);
-    } else if (action === "leaderboard") {
-      window.location.href = "/leaderboard";
-    } else if (action === "rules") {
-      window.location.href = "/rules";
-    } else if (action === "challenges") {
-      window.location.href = "/challenges";
+      window.location.href = `/`;
+    } else {
+      // Show component inline
+      setActiveComponent(action);
     }
     setShowSidebar(false);
+  };
+
+  const closeComponent = () => {
+    setActiveComponent(null);
   };
 
   const isCurrentUserChallenger =
@@ -223,6 +246,63 @@ const ChallengePage: React.FC = () => {
     return (
       <div className="min-h-screen bg-gradient-to-b from-deep-pink to-black flex items-center justify-center">
         <div className="text-soft-pink text-xl">Challenge not found</div>
+      </div>
+    );
+  }
+
+  // If a component is active, show it instead of the challenge page
+  if (activeComponent) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-deep-pink to-black">
+        <Sidebar
+          isOpen={showSidebar}
+          onClose={() => setShowSidebar(false)}
+          onAction={handleSidebarAction}
+        />
+        <button
+          onClick={() => setShowSidebar(true)}
+          className="absolute top-4 right-4 bg-bright-pink text-soft-pink p-2 rounded-lg hover:bg-deep-pink transition-colors z-10"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M3 12H21"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M3 6H21"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M3 18H21"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+
+        {activeComponent === "leaderboard" && (
+          <LeaderboardComponent onClose={closeComponent} />
+        )}
+        {activeComponent === "rules" && (
+          <RulesComponent onClose={closeComponent} />
+        )}
+        {activeComponent === "challenges" && (
+          <ChallengesComponent onClose={closeComponent} />
+        )}
       </div>
     );
   }
@@ -383,7 +463,7 @@ const ChallengePage: React.FC = () => {
               (isCurrentUserChallenger || isCurrentUserChallenged) && (
                 <div className="text-center bg-gray-100 p-3 rounded-xl">
                   <div className="text-black font-bold text-sm mb-1">
-                    Your Previous Best Score
+                    Your Challenge Best Score
                   </div>
                   <div className="text-bright-pink font-bold text-lg">
                     {previousBestScore} pts
@@ -404,7 +484,7 @@ const ChallengePage: React.FC = () => {
                   {previousBestScore !== null &&
                     _finalScore > previousBestScore && (
                       <div className="text-green-600 font-bold text-sm mt-1">
-                        🎉 New Personal Best!
+                        🎉 New Challenge Best!
                       </div>
                     )}
                 </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useMiniApp } from "@neynar/react";
 import { ShareButton } from "./Share";
 import { APP_URL } from "~/lib/constants";
+import { useToast } from "./Toast";
 
 type User = {
   fid: number;
@@ -46,6 +47,7 @@ const Challenge: React.FC<ChallengeProps> = ({
   setShowCreateChallenge,
 }) => {
   const { context } = useMiniApp();
+  const { showToast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -91,6 +93,7 @@ const Challenge: React.FC<ChallengeProps> = ({
       }
     } catch (error) {
       console.error("Error checking user score:", error);
+      showToast("Failed to check your score", "error");
     }
   };
 
@@ -116,53 +119,24 @@ const Challenge: React.FC<ChallengeProps> = ({
       }
     } catch (error) {
       console.error("Error searching users:", error);
+      showToast("Failed to search users", "error");
     } finally {
       setIsSearching(false);
     }
   };
 
   const createChallenge = async () => {
-    if (!selectedUser || !context?.user || !hasSubmittedScore) return;
+    if (!selectedUser || !context?.user) return;
 
     setIsCreatingChallenge(true);
     try {
-      // Fetch the user's latest score from leaderboard
-      let currentScore = userScore || 0;
-      try {
-        let scoreResponse;
-        if (context?.user?.fid) {
-          scoreResponse = await fetch(
-            `/api/leaderboard?fid=${context.user.fid}&username=${
-              context.user.username || ""
-            }`
-          );
-        } else {
-          scoreResponse = await fetch(
-            `/api/leaderboard?username=${context.user.username}`
-          );
-        }
-        const scoreData = await scoreResponse.json();
-        if (scoreData.scores && scoreData.scores.length > 0) {
-          const userScoreData = scoreData.scores.find(
-            (score: any) =>
-              score.fid === context.user.fid ||
-              score.username === context.user.username
-          );
-          if (userScoreData) {
-            currentScore = userScoreData.score;
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching latest score:", error);
-      }
-
       console.log("Creating challenge with data:", {
         challenger: {
           fid: context.user.fid,
           username: context.user.username,
           displayName: context.user.displayName,
           pfpUrl: context.user.pfpUrl,
-          score: currentScore,
+          score: 0, // Start with 0 for new challenge
         },
         challenged: {
           fid: selectedUser.fid,
@@ -183,7 +157,7 @@ const Challenge: React.FC<ChallengeProps> = ({
             username: context.user.username,
             displayName: context.user.displayName,
             pfpUrl: context.user.pfpUrl,
-            score: currentScore,
+            score: 0, // Start with 0 for new challenge
           },
           challenged: {
             fid: selectedUser.fid,
@@ -203,9 +177,11 @@ const Challenge: React.FC<ChallengeProps> = ({
         setChallengeLink(link);
         setShowChallengeModal(true);
         setShowCreateChallenge?.(false);
+        showToast("Challenge created successfully!", "success");
       }
     } catch (error) {
       console.error("Error creating challenge:", error);
+      showToast("Failed to create challenge", "error");
     } finally {
       setIsCreatingChallenge(false);
     }
@@ -252,32 +228,22 @@ const Challenge: React.FC<ChallengeProps> = ({
 
         {!showChallengeModal ? (
           <div className="space-y-4">
-            {/* Score Requirement */}
-            {!hasSubmittedScore && (
-              <div className="bg-yellow-100 border-2 border-yellow-400 rounded-lg p-4 text-yellow-800">
-                <div className="font-bold mb-2">⚠️ Score Required</div>
-                <div className="text-sm">
-                  You need to play the game and submit your score first before
-                  you can challenge others!
-                </div>
-                <button
-                  onClick={() => (window.location.href = "/")}
-                  className="inline-block mt-3 bg-bright-pink text-soft-pink px-4 py-2 rounded-lg font-bold hover:bg-deep-pink transition-colors text-sm"
-                >
-                  Play Game First
-                </button>
+            {/* Challenge Info */}
+            <div className="bg-blue-100 border-2 border-blue-400 rounded-lg p-4 text-blue-800">
+              <div className="font-bold mb-2">⚔️ Challenge Rules</div>
+              <div className="text-sm">
+                <ul>
+                  <li>Both players start with 0 points </li>
+                  <li>Play the game to achieve your best score </li>
+                  <li>Highest score wins the challenge</li>
+                  <li>
+                    The challenge expires after 24 hours if no score is
+                    submitted
+                  </li>
+                  <li>Highest score wins the challenge</li>
+                </ul>
               </div>
-            )}
-
-            {hasSubmittedScore && (
-              <div className="bg-green-100 border-2 border-green-400 rounded-lg p-4 text-green-800">
-                <div className="font-bold mb-2">✅ Ready to Challenge!</div>
-                <div className="text-sm">
-                  Your best score:{" "}
-                  <span className="font-bold">{userScore} points</span>
-                </div>
-              </div>
-            )}
+            </div>
 
             <div>
               <label className="block text-black text-sm font-bold mb-2">
@@ -295,7 +261,6 @@ const Challenge: React.FC<ChallengeProps> = ({
                       searchUsers();
                     }
                   }}
-                  disabled={!hasSubmittedScore}
                 />
                 <button
                   onClick={searchUsers}
@@ -365,7 +330,7 @@ const Challenge: React.FC<ChallengeProps> = ({
 
                 <button
                   onClick={createChallenge}
-                  disabled={isCreatingChallenge || !hasSubmittedScore}
+                  disabled={isCreatingChallenge}
                   className="w-full mt-4 bg-bright-pink text-soft-pink py-3 px-4 rounded-xl font-bold hover:bg-deep-pink transition-colors disabled:opacity-50"
                 >
                   {isCreatingChallenge
@@ -398,11 +363,7 @@ const Challenge: React.FC<ChallengeProps> = ({
             <ShareButton
               buttonText="Share Challenge"
               cast={{
-                text: `I just challenged ${
-                  selectedUser?.displayName || selectedUser?.username
-                } to a game of Farcaster Snake! Can you beat my score? @${
-                  selectedUser?.username
-                }`,
+                text: `⚔️ I just challenged @${selectedUser?.username} to a Farcaster Snake duel! Let's see who gets the highest score! 🐍`,
                 bestFriends: true,
                 embeds: [challengeLink || ""],
               }}

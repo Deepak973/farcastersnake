@@ -175,7 +175,7 @@ export default function ChallengesPage() {
                               href={`/challenge/${challenge.id}`}
                               className="inline-block bg-bright-pink text-soft-pink px-4 py-2 rounded-lg font-bold text-sm hover:bg-deep-pink transition-colors"
                             >
-                              🎮 Play Challenge
+                              Play Challenge
                             </a>
                           )}
                         {challenge.winner && (
@@ -196,7 +196,7 @@ export default function ChallengesPage() {
               href="/"
               className="inline-block bg-bright-pink text-soft-pink px-6 py-3 rounded-xl font-bold hover:bg-deep-pink transition-colors"
             >
-              🎮 Play Game
+              Play Game
             </Link>
           </div>
         </div>

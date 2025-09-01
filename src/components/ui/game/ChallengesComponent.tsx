@@ -4,6 +4,7 @@ import { useMiniApp } from "@neynar/react";
 import Challenge from "../Challenge";
 import { ShareButton } from "../Share";
 import { APP_URL } from "~/lib/constants";
+import { useToast } from "../Toast";
 
 interface ChallengeData {
   id: string;
@@ -45,6 +46,7 @@ export const ChallengesComponent: React.FC<ChallengesComponentProps> = ({
   const [loading, setLoading] = useState(true);
   const [showCreateChallenge, setShowCreateChallenge] = useState(false);
   const { context } = useMiniApp();
+  const { showToast } = useToast();
 
   // Generate challenge share text
   const generateChallengeShareText = (challenge: ChallengeData) => {
@@ -54,18 +56,10 @@ export const ChallengesComponent: React.FC<ChallengesComponentProps> = ({
 
     if (isCurrentUserChallenger) {
       // Current user is the challenger, tag the challenged person
-      return `⚔️ I challenged @${
-        challenge.challenged.username
-      } to beat my score of ${
-        challenge.challenger.score || 0
-      } in Farcaster Snake! Can you beat it? 🐍`;
+      return `⚔️ I challenged @${challenge.challenged.username} to a Farcaster Snake duel! Let's see who gets the highest score! 🐍`;
     } else {
       // Current user is the challenged person, tag the challenger
-      return `⚔️ @${
-        challenge.challenger.username
-      } challenged me to beat their score of ${
-        challenge.challenger.score || 0
-      } in Farcaster Snake! Let's see who wins! 🐍`;
+      return `⚔️ @${challenge.challenger.username} challenged me to a Farcaster Snake duel! Let's see who wins! 🐍`;
     }
   };
 
@@ -181,179 +175,126 @@ export const ChallengesComponent: React.FC<ChallengesComponentProps> = ({
             </div>
           ) : activeChallenges.length === 0 ? (
             <div className="text-center text-black py-6">
-              <div className="text-lg mb-3">⚔️</div>
-              <p className="text-sm">
+              <div className="text-2xl mb-3">⚔️</div>
+              <p className="text-sm text-gray-600">
                 No active challenges! Create one to get started!
               </p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {activeChallenges.map((challenge) => (
                 <div
                   key={challenge.id}
                   className="bg-soft-pink rounded-lg p-4 border-2 border-deep-pink"
                 >
-                  {/* Challenge Header */}
-                  <div className="flex items-center justify-between mb-4">
+                  {/* Challenge Header - Simplified */}
+                  <div className="flex items-center justify-between mb-3">
                     {/* Challenger */}
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                       <img
                         src={challenge.challenger.pfpUrl}
                         alt={challenge.challenger.displayName}
-                        className="w-10 h-10 rounded-full border-2 border-deep-pink"
+                        className="w-8 h-8 rounded-full border border-deep-pink"
                       />
-                      <div>
-                        <h4 className="font-bold text-black text-sm">
-                          {challenge.challenger.displayName}
-                        </h4>
-                        <p className="text-xs text-gray-600">
-                          Score: {challenge.challenger.score || 0}
-                        </p>
-                      </div>
+                      <span className="font-bold text-black text-sm">
+                        {challenge.challenger.displayName}
+                      </span>
                     </div>
 
                     {/* VS */}
                     <div className="text-center">
-                      <div className="text-xl">⚔️</div>
-                      <div className="text-xs text-gray-600 font-bold">VS</div>
+                      <div className="text-lg">⚔️</div>
                     </div>
 
                     {/* Challenged */}
-                    <div className="flex items-center gap-3">
-                      <div className="text-right">
-                        <h4 className="font-bold text-black text-sm">
-                          {challenge.challenged.displayName}
-                        </h4>
-                        <p className="text-xs text-gray-600">
-                          Score: {challenge.challenged.score || 0}
-                        </p>
-                      </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-black text-sm">
+                        {challenge.challenged.displayName}
+                      </span>
                       <img
                         src={challenge.challenged.pfpUrl}
                         alt={challenge.challenged.displayName}
-                        className="w-10 h-10 rounded-full border-2 border-deep-pink"
+                        className="w-8 h-8 rounded-full border border-deep-pink"
                       />
                     </div>
                   </div>
 
-                  {/* Challenge Details */}
-                  <div className="space-y-2 mb-3">
-                    {/* Time Remaining */}
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-600">Time Left:</span>
-                      <span
-                        className={`text-xs font-bold ${
-                          isChallengeExpired(challenge.expiresAt)
-                            ? "text-red-600"
-                            : "text-green-600"
-                        }`}
-                      >
-                        {formatTimeRemaining(challenge.expiresAt)}
-                      </span>
-                    </div>
-
-                    {/* Status */}
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-600">Status:</span>
-                      <span className="text-xs font-bold text-deep-pink">
-                        {getChallengeStatus(challenge)}
-                      </span>
-                    </div>
-
-                    {/* Leader */}
-                    {getLeader(challenge) && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-600">Leader:</span>
-                        <div className="flex items-center gap-2">
-                          <img
-                            src={getLeader(challenge)!.pfpUrl}
-                            alt={getLeader(challenge)!.displayName}
-                            className="w-4 h-4 rounded-full border border-deep-pink"
-                          />
-                          <span className="text-xs font-bold text-green-600">
-                            {getLeader(challenge)!.displayName} (
-                            {getLeader(challenge)!.score} pts)
-                          </span>
-                        </div>
+                  {/* Scores - Clean Display */}
+                  <div className="flex justify-between items-center mb-3 bg-white rounded-lg p-2">
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-deep-pink">
+                        {challenge.challenger.score || 0}
                       </div>
-                    )}
-
-                    {/* Tie */}
-                    {(challenge.challenger.score || 0) > 0 &&
-                      (challenge.challenged.score || 0) > 0 &&
-                      (challenge.challenger.score || 0) ===
-                        (challenge.challenged.score || 0) && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs text-gray-600">Result:</span>
-                          <span className="text-xs font-bold text-yellow-600">
-                            🏆 Tie! ({challenge.challenger.score || 0} pts each)
-                          </span>
-                        </div>
-                      )}
+                      <div className="text-xs text-gray-500">Score</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-deep-pink">
+                        {challenge.challenged.score || 0}
+                      </div>
+                      <div className="text-xs text-gray-500">Score</div>
+                    </div>
                   </div>
 
-                  {/* Challenge Link */}
-                  {challenge.status === "active" &&
-                    !isChallengeExpired(challenge.expiresAt) && (
-                      <div className="mb-3 p-3 bg-gray-100 rounded-lg">
-                        <div className="flex items-center justify-between flex-wrap gap-2">
-                          <span className="text-xs text-gray-600 font-bold">
-                            Challenge Link:
-                          </span>
+                  {/* Status & Time - Simplified */}
+                  <div className="flex justify-between items-center mb-3">
+                    <div className="text-xs text-gray-600">
+                      {getChallengeStatus(challenge)}
+                    </div>
+                    <div
+                      className={`text-xs font-bold ${
+                        isChallengeExpired(challenge.expiresAt)
+                          ? "text-red-600"
+                          : "text-green-600"
+                      }`}
+                    >
+                      {formatTimeRemaining(challenge.expiresAt)}
+                    </div>
+                  </div>
+
+                  {/* Action Buttons - Clean */}
+                  <div className="flex gap-2">
+                    {challenge.status === "active" &&
+                      !isChallengeExpired(challenge.expiresAt) && (
+                        <>
+                          <a
+                            href={`/challenge/${challenge.id}`}
+                            className="flex-1 bg-bright-pink text-soft-pink py-2 px-3 rounded font-bold text-sm hover:bg-deep-pink transition-colors text-center"
+                          >
+                            🎮 Play
+                          </a>
                           <button
                             onClick={() => {
                               const challengeUrl = `https://farcaster.xyz/miniapps/SmXRQmh2Sp33/farcaster-snake/challenge/${challenge.id}`;
                               navigator.clipboard.writeText(challengeUrl);
-                              alert("Challenge link copied to clipboard!");
+                              showToast("Challenge link copied!", "success");
                             }}
-                            className="bg-deep-pink text-soft-pink px-2 py-1 rounded text-xs font-bold hover:bg-bright-pink transition-colors"
+                            className="bg-deep-pink text-soft-pink py-2 px-3 rounded font-bold text-sm hover:bg-bright-pink transition-colors"
                           >
-                            📋 Copy Link
+                            📋 Copy
                           </button>
-                        </div>
+                          <ShareButton
+                            buttonText="Share"
+                            cast={{
+                              text: generateChallengeShareText(challenge),
+                              bestFriends: true,
+                              embeds: [
+                                `https://farcaster.xyz/miniapps/SmXRQmh2Sp33/farcaster-snake/challenge/${challenge.id}`,
+                              ],
+                            }}
+                            className="bg-deep-pink text-soft-pink py-2 px-3 rounded font-bold text-sm hover:bg-bright-pink transition-colors"
+                          />
+                        </>
+                      )}
+                    {challenge.winner && (
+                      <div className="flex-1 text-center text-green-600 font-bold text-sm">
+                        🏆 {challenge.winner.displayName} wins!
                       </div>
                     )}
-
-                  {/* Action Buttons */}
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                    <div className="text-xs text-gray-500">
-                      Created:{" "}
-                      {new Date(challenge.createdAt).toLocaleDateString()}
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {challenge.status === "active" &&
-                        !isChallengeExpired(challenge.expiresAt) && (
-                          <>
-                            <a
-                              href={`/challenge/${challenge.id}`}
-                              className="inline-block bg-bright-pink text-soft-pink px-3 py-1 rounded font-bold text-xs hover:bg-deep-pink transition-colors text-center"
-                            >
-                              Play
-                            </a>
-                            <ShareButton
-                              buttonText="Share"
-                              cast={{
-                                text: generateChallengeShareText(challenge),
-                                bestFriends: true,
-                                embeds: [
-                                  `https://farcaster.xyz/miniapps/SmXRQmh2Sp33/farcaster-snake/challenge/${challenge.id}`,
-                                ],
-                              }}
-                              className="inline-block bg-deep-pink text-soft-pink px-3 py-1 rounded font-bold text-xs hover:bg-bright-pink transition-colors text-center"
-                            />
-                          </>
-                        )}
-                      {challenge.winner && (
-                        <div className="text-xs text-green-600 font-bold">
-                          🏆 Winner: {challenge.winner.displayName}
-                        </div>
-                      )}
-                      {isChallengeExpired(challenge.expiresAt) && (
-                        <div className="text-xs text-red-600 font-bold">
-                          ⏰ Challenge Expired
-                        </div>
-                      )}
-                    </div>
+                    {isChallengeExpired(challenge.expiresAt) && (
+                      <div className="flex-1 text-center text-red-600 font-bold text-sm">
+                        ⏰ Expired
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
