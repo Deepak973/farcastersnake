@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
 // Allowed origin - only your domain
-const ALLOWED_ORIGIN = "https://farcastersnake.vercel.app";
+const ALLOWED_ORIGIN =
+  "https://farcaster.xyz/miniapps/SmXRQmh2Sp33/farcaster-snake";
 
 export function withCors(
   handler: (request: NextRequest) => Promise<NextResponse>
