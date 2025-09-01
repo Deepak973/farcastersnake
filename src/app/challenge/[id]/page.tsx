@@ -127,7 +127,7 @@ const ChallengePage: React.FC = () => {
           showToast(`🏆 Tied your challenge score of ${score} points!`, "info");
         } else {
           showToast(
-            `📊 Score: ${score} points (your challenge best is ${currentScore})`,
+            `Score: ${score} points (your challenge best is ${currentScore})`,
             "info"
           );
         }
@@ -167,24 +167,21 @@ const ChallengePage: React.FC = () => {
 
           if (score > currentScore) {
             showToast(
-              `🎉 New challenge high score! You improved from ${currentScore} to ${score} points!`,
+              `New challenge high score! You improved from ${currentScore} to ${score} points!`,
               "success"
             );
           } else if (score === currentScore) {
-            showToast(
-              `🏆 Tied your challenge score of ${score} points!`,
-              "info"
-            );
+            showToast(`Tied your challenge score of ${score} points!`, "info");
           } else {
             showToast(
-              `📊 Score submitted: ${score} points (your challenge best is ${currentScore})`,
+              `Score submitted: ${score} points (your challenge best is ${currentScore})`,
               "info"
             );
           }
         } else {
           // First time submitting to this challenge
           showToast(
-            `🎉 First challenge score submitted: ${score} points!`,
+            `First challenge score submitted: ${score} points!`,
             "success"
           );
         }
@@ -433,7 +430,7 @@ const ChallengePage: React.FC = () => {
                   {challenge.challenger.score} pts
                 </div>
                 {challenge.challenger.submittedAt && (
-                  <div className="text-xs text-gray-600">✅ Submitted</div>
+                  <div className="text-xs text-gray-600"> Submitted</div>
                 )}
               </div>
 
@@ -453,7 +450,7 @@ const ChallengePage: React.FC = () => {
                   {challenge.challenged.score} pts
                 </div>
                 {challenge.challenged.submittedAt && (
-                  <div className="text-xs text-gray-600">✅ Submitted</div>
+                  <div className="text-xs text-gray-600">Submitted</div>
                 )}
               </div>
             </div>
@@ -496,7 +493,7 @@ const ChallengePage: React.FC = () => {
                   {previousBestScore !== null &&
                     _finalScore > previousBestScore && (
                       <div className="text-green-600 font-bold text-sm mt-1">
-                        🎉 New Challenge Best!
+                        New Challenge Best!
                       </div>
                     )}
                 </div>
@@ -532,9 +529,7 @@ const ChallengePage: React.FC = () => {
                     </button>
                   ) : (
                     <div className="text-center bg-blue-100 text-blue-800 p-3 rounded-xl">
-                      <div className="font-bold text-sm">
-                        ✅ Score Submitted!
-                      </div>
+                      <div className="font-bold text-sm">Score Submitted!</div>
                       <div className="text-xs">
                         You have already submitted your score for this
                         challenge.

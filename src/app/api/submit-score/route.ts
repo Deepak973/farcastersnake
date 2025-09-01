@@ -1,10 +1,11 @@
 // app/api/submitScore/route.ts
 import { NextResponse } from "next/server";
 import { MongoClient } from "mongodb";
+import { withCors } from "~/lib/cors";
 
 const client = new MongoClient(process.env.MONGODB_URI!);
 
-export async function POST(req: Request) {
+async function handler(req: Request) {
   try {
     const { username, score, address, profileImage, fid } = await req.json();
 
@@ -47,3 +48,5 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
+
+export const POST = withCors(handler);

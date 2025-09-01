@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
+import { withCors } from "~/lib/cors";
 
-export async function GET(request: Request) {
+async function handler(request: Request) {
   const { searchParams } = new URL(request.url);
   const fid = searchParams.get("fid"); // Default FID if none provided
 
@@ -23,15 +24,12 @@ export async function GET(request: Request) {
 
     // Extract and format the followers data
     const followers =
-      data.users?.map((user: any) => {
-        console.log("Raw user data from Neynar:", user.user); // Debug log
-        return {
-          fid: user.user.fid,
-          username: user.user.username,
-          displayName: user.user.display_name,
-          pfpUrl: user.user.pfp_url,
-        };
-      }) || [];
+      data.users?.map((user: any) => ({
+        fid: user.user.fid,
+        username: user.user.username,
+        displayName: user.user.display_name,
+        pfpUrl: user.user.pfp_url,
+      })) || [];
 
     return NextResponse.json({ followers });
   } catch (error) {
@@ -42,3 +40,5 @@ export async function GET(request: Request) {
     );
   }
 }
+
+export const GET = withCors(handler);

@@ -25,12 +25,7 @@ interface ChallengeData {
     submittedAt?: string;
   };
   status: "active" | "completed";
-  winner?: {
-    fid: number;
-    username: string;
-    displayName: string;
-    pfpUrl: string;
-  };
+  winner?: "challenger" | "challenged";
   createdAt: string;
   expiresAt: string;
 }
@@ -280,9 +275,14 @@ export const ChallengesComponent: React.FC<ChallengesComponentProps> = ({
                           />
                         </>
                       )}
-                    {challenge.winner && (
+                    {challenge?.winner && challenge.winner == "challenged" && (
                       <div className="flex-1 text-center text-green-600 font-bold text-sm">
-                        🏆 {challenge.winner.displayName} wins!
+                        🏆 {challenge.challenged.displayName} wins!
+                      </div>
+                    )}
+                    {challenge?.winner && challenge.winner == "challenger" && (
+                      <div className="flex-1 text-center text-green-600 font-bold text-sm">
+                        🏆 {challenge.challenger.displayName} wins!
                       </div>
                     )}
                     {isChallengeCompleted(challenge) && !challenge.winner && (

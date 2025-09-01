@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { MongoClient } from "mongodb";
+import { withCors } from "~/lib/cors";
 
 const client = new MongoClient(process.env.MONGODB_URI!);
 
-export async function POST(request: Request) {
+async function postHandler(request: Request) {
   try {
     const body = await request.json();
     const { action, challengeId, challenger, challenged, score } = body;
@@ -104,39 +105,31 @@ export async function POST(request: Request) {
                 },
                 {
                   $set: {
-                    score: score,
+                    score,
                     username: challenger.username,
-                    displayName: challenger.displayName,
-                    pfpUrl: challenger.pfpUrl,
                     fid: challenger.fid,
                     timestamp: new Date(),
                   },
                 }
               );
-              console.log(
-                `Updated leaderboard score for ${challenger.username} to ${score}`
-              );
             }
           } else {
-            // Insert new score if user doesn't exist in leaderboard
+            // Insert new score if none exists
             await scoresCollection.insertOne({
-              score: score,
+              address: challenger.address || "",
               username: challenger.username,
-              displayName: challenger.displayName,
-              pfpUrl: challenger.pfpUrl,
+              score,
+              profileImage: challenger.pfpUrl || "",
               fid: challenger.fid,
               timestamp: new Date(),
             });
-            console.log(
-              `Added new leaderboard score for ${challenger.username}: ${score}`
-            );
           }
-        } catch (leaderboardError) {
-          console.error("Error updating leaderboard:", leaderboardError);
+        } catch (scoreError) {
+          console.error("Error updating leaderboard:", scoreError);
           // Continue with challenge update even if leaderboard update fails
         }
 
-        // Check if both players have submitted
+        // Update the challenge
         const updatedChallenge = await collection.findOneAndUpdate(
           { id: challengeId },
           { $set: updateData },
@@ -191,7 +184,7 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET(request: Request) {
+async function getHandler(request: Request) {
   const { searchParams } = new URL(request.url);
   const challengeId = searchParams.get("id");
   const fid = searchParams.get("fid");
@@ -240,3 +233,6 @@ export async function GET(request: Request) {
     );
   }
 }
+
+export const POST = withCors(postHandler);
+export const GET = withCors(getHandler);
