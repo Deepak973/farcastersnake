@@ -1,29 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// Allowed origin - only your domain
-const ALLOWED_ORIGIN =
-  "https://farcaster.xyz/miniapps/SmXRQmh2Sp33/farcaster-snake";
+const ALLOWED_DOMAIN = "https://farcastersnake.vercel.app";
 
 export function withCors(
   handler: (request: NextRequest) => Promise<NextResponse>
 ) {
   return async (request: NextRequest): Promise<NextResponse> => {
-    const origin = request.headers.get("origin");
+    const referer = request.headers.get("referer") || "";
 
-    // Block requests without origin OR from unauthorized origins
-    if (!origin || origin !== ALLOWED_ORIGIN) {
+    // Block if referer is missing or not from allowed domain
+    if (!referer.startsWith(ALLOWED_DOMAIN)) {
       return NextResponse.json(
-        { error: "Access denied - unauthorized origin" },
+        { error: "Access denied - unauthorized request" },
         { status: 403 }
       );
     }
 
-    // Handle preflight requests
+    // Handle preflight (just in case)
     if (request.method === "OPTIONS") {
       return new NextResponse(null, {
         status: 200,
         headers: {
-          "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
+          "Access-Control-Allow-Origin": ALLOWED_DOMAIN,
           "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
           "Access-Control-Allow-Headers": "Content-Type, Authorization",
         },
@@ -33,8 +31,8 @@ export function withCors(
     // Process the actual request
     const response = await handler(request);
 
-    // Add CORS headers to the response
-    response.headers.set("Access-Control-Allow-Origin", ALLOWED_ORIGIN);
+    // Add CORS headers (for completeness, but not strictly needed if no cross-origin)
+    response.headers.set("Access-Control-Allow-Origin", ALLOWED_DOMAIN);
     response.headers.set(
       "Access-Control-Allow-Methods",
       "GET, POST, PUT, DELETE, OPTIONS"
