@@ -49,6 +49,7 @@ const ChallengePage: React.FC = () => {
   const [previousBestScore, setPreviousBestScore] = useState<number | null>(
     null
   );
+  const [scoreSubmitted, setScoreSubmitted] = useState(false);
 
   useEffect(() => {
     const fetchChallenge = async () => {
@@ -101,6 +102,12 @@ const ChallengePage: React.FC = () => {
   const submitScore = async (score: number) => {
     if (!challenge || !context?.user) return;
 
+    // Prevent duplicate submissions
+    if (scoreSubmitted) {
+      console.log("Score already submitted, skipping duplicate submission");
+      return;
+    }
+
     // Get current user's score in this challenge
     const currentUserFid = context.user.fid;
     const currentScore =
@@ -114,14 +121,16 @@ const ChallengePage: React.FC = () => {
         `Score ${score} not submitted - current challenge score is ${currentScore}`
       );
 
-      // Show appropriate message
-      if (score === currentScore) {
-        showToast(`🏆 Tied your challenge score of ${score} points!`, "info");
-      } else {
-        showToast(
-          `📊 Score: ${score} points (your challenge best is ${currentScore})`,
-          "info"
-        );
+      // Show appropriate message only if not already submitted
+      if (!scoreSubmitted) {
+        if (score === currentScore) {
+          showToast(`🏆 Tied your challenge score of ${score} points!`, "info");
+        } else {
+          showToast(
+            `📊 Score: ${score} points (your challenge best is ${currentScore})`,
+            "info"
+          );
+        }
       }
       return;
     }
@@ -148,6 +157,7 @@ const ChallengePage: React.FC = () => {
       if (data.challenge) {
         setChallenge(data.challenge);
         setFinalScore(score);
+        setScoreSubmitted(true); // Mark as submitted to prevent duplicates
 
         // Show success message for score update
         if (hasSubmitted) {
@@ -352,7 +362,11 @@ const ChallengePage: React.FC = () => {
         <SnakeGame
           onGameOver={(score) => {
             setShowGame(false);
-            submitScore(score);
+            setFinalScore(score);
+            // Defer score submission to avoid setState during render
+            setTimeout(() => {
+              submitScore(score);
+            }, 0);
           }}
         />
       </div>
@@ -509,7 +523,10 @@ const ChallengePage: React.FC = () => {
               (isCurrentUserChallenger || isCurrentUserChallenged) && (
                 <div className="space-y-3">
                   <button
-                    onClick={() => setShowGame(true)}
+                    onClick={() => {
+                      setShowGame(true);
+                      setScoreSubmitted(false); // Reset flag when starting new game
+                    }}
                     className="w-full bg-bright-pink text-soft-pink py-4 px-6 rounded-xl font-bold text-lg hover:bg-deep-pink transition-colors"
                   >
                     🎮 {hasSubmitted ? "Play Again!" : "Play Now!"}
