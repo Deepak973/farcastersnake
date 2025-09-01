@@ -201,16 +201,12 @@ const ChallengePage: React.FC = () => {
     }
   };
 
-  const formatTimeRemaining = (expiresAt: string) => {
-    const now = new Date();
-    const expiry = new Date(expiresAt);
-    const diff = expiry.getTime() - now.getTime();
-
-    if (diff <= 0) return "Expired";
-
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    return `${hours}h ${minutes}m remaining`;
+  const isChallengeCompleted = () => {
+    if (!challenge) return false;
+    return (
+      challenge.status === "completed" ||
+      (challenge.challenger.submittedAt && challenge.challenged.submittedAt)
+    );
   };
 
   const handleSidebarAction = (action: string) => {
@@ -468,7 +464,9 @@ const ChallengePage: React.FC = () => {
                 Status: {challenge.status.toUpperCase()}
               </div>
               <div className="text-sm text-gray-600">
-                {formatTimeRemaining(challenge.expiresAt)}
+                {isChallengeCompleted()
+                  ? "Both players have submitted"
+                  : "Waiting for both players"}
               </div>
             </div>
 
@@ -522,36 +520,29 @@ const ChallengePage: React.FC = () => {
             {challenge.status === "active" &&
               (isCurrentUserChallenger || isCurrentUserChallenged) && (
                 <div className="space-y-3">
-                  <button
-                    onClick={() => {
-                      setShowGame(true);
-                      setScoreSubmitted(false); // Reset flag when starting new game
-                    }}
-                    className="w-full bg-bright-pink text-soft-pink py-4 px-6 rounded-xl font-bold text-lg hover:bg-deep-pink transition-colors"
-                  >
-                    🎮 {hasSubmitted ? "Play Again!" : "Play Now!"}
-                  </button>
-
-                  {hasSubmitted && (
+                  {!hasSubmitted ? (
+                    <button
+                      onClick={() => {
+                        setShowGame(true);
+                        setScoreSubmitted(false); // Reset flag when starting new game
+                      }}
+                      className="w-full bg-bright-pink text-soft-pink py-4 px-6 rounded-xl font-bold text-lg hover:bg-deep-pink transition-colors"
+                    >
+                      🎮 Play Now!
+                    </button>
+                  ) : (
                     <div className="text-center bg-blue-100 text-blue-800 p-3 rounded-xl">
                       <div className="font-bold text-sm">
                         ✅ Score Submitted!
                       </div>
                       <div className="text-xs">
-                        You can play again to improve your score until the
-                        challenge expires!
+                        You have already submitted your score for this
+                        challenge.
                       </div>
                     </div>
                   )}
                 </div>
               )}
-
-            {challenge.status === "expired" && (
-              <div className="text-center bg-red-100 text-red-800 p-4 rounded-xl">
-                <div className="font-bold">⏰ Challenge Expired</div>
-                <div className="text-sm">Time&apos;s up!</div>
-              </div>
-            )}
 
             {!isCurrentUserChallenger && !isCurrentUserChallenged && (
               <div className="text-center bg-gray-100 text-gray-800 p-4 rounded-xl">

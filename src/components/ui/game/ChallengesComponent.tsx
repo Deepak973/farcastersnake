@@ -54,12 +54,25 @@ export const ChallengesComponent: React.FC<ChallengesComponentProps> = ({
     const isCurrentUserChallenger =
       challenge.challenger.fid === currentUser?.fid;
 
+    console.log(
+      "Challenge challenger username:",
+      challenge.challenger.username
+    ); // Debug log
+    console.log(
+      "Challenge challenged username:",
+      challenge.challenged.username
+    ); // Debug log
+
     if (isCurrentUserChallenger) {
       // Current user is the challenger, tag the challenged person
-      return `⚔️ I challenged @${challenge.challenged.username} to a Farcaster Snake duel! Let's see who gets the highest score! 🐍`;
+      const shareText = `⚔️ I challenged @${challenge.challenged.username} to a Farcaster Snake duel! Let's see who gets the highest score! 🐍`;
+      console.log("Challenge share text (challenger):", shareText); // Debug log
+      return shareText;
     } else {
       // Current user is the challenged person, tag the challenger
-      return `⚔️ @${challenge.challenger.username} challenged me to a Farcaster Snake duel! Let's see who wins! 🐍`;
+      const shareText = `⚔️ @${challenge.challenger.username} challenged me to a Farcaster Snake duel! Let's see who wins! 🐍`;
+      console.log("Challenge share text (challenged):", shareText); // Debug log
+      return shareText;
     }
   };
 
@@ -84,33 +97,21 @@ export const ChallengesComponent: React.FC<ChallengesComponentProps> = ({
     fetchChallenges();
   }, [context?.user?.fid, showCreateChallenge]);
 
-  const isChallengeExpired = (expiresAt: string) => {
-    return new Date(expiresAt) < new Date();
-  };
-
-  const formatTimeRemaining = (expiresAt: string) => {
-    const now = new Date();
-    const expiry = new Date(expiresAt);
-    const diff = expiry.getTime() - now.getTime();
-
-    if (diff <= 0) return "Expired";
-
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    return `${hours}h ${minutes}m remaining`;
+  const isChallengeCompleted = (challenge: ChallengeData) => {
+    return (
+      challenge.status === "completed" ||
+      (challenge.challenger.submittedAt && challenge.challenged.submittedAt)
+    );
   };
 
   const getChallengeStatus = (challenge: ChallengeData) => {
-    if (isChallengeExpired(challenge.expiresAt)) {
-      return "Expired";
-    }
-    if (challenge.status === "completed") {
+    if (isChallengeCompleted(challenge)) {
       return "Completed";
     }
-    if (challenge.challenger.score && challenge.challenged.score) {
-      return "Completed";
+    if (challenge.challenger.submittedAt && !challenge.challenged.submittedAt) {
+      return "Waiting for opponent";
     }
-    if (challenge.challenger.score) {
+    if (challenge.challenged.submittedAt && !challenge.challenger.submittedAt) {
       return "Waiting for opponent";
     }
     return "Active";
@@ -235,26 +236,20 @@ export const ChallengesComponent: React.FC<ChallengesComponentProps> = ({
                     </div>
                   </div>
 
-                  {/* Status & Time - Simplified */}
+                  {/* Status - Simplified */}
                   <div className="flex justify-between items-center mb-3">
                     <div className="text-xs text-gray-600">
                       {getChallengeStatus(challenge)}
                     </div>
-                    <div
-                      className={`text-xs font-bold ${
-                        isChallengeExpired(challenge.expiresAt)
-                          ? "text-red-600"
-                          : "text-green-600"
-                      }`}
-                    >
-                      {formatTimeRemaining(challenge.expiresAt)}
+                    <div className="text-xs font-bold text-green-600">
+                      {isChallengeCompleted(challenge) ? "Finished" : "Active"}
                     </div>
                   </div>
 
                   {/* Action Buttons - Clean */}
                   <div className="flex gap-2">
                     {challenge.status === "active" &&
-                      !isChallengeExpired(challenge.expiresAt) && (
+                      !isChallengeCompleted(challenge) && (
                         <>
                           <a
                             href={`/challenge/${challenge.id}`}
@@ -290,9 +285,9 @@ export const ChallengesComponent: React.FC<ChallengesComponentProps> = ({
                         🏆 {challenge.winner.displayName} wins!
                       </div>
                     )}
-                    {isChallengeExpired(challenge.expiresAt) && (
-                      <div className="flex-1 text-center text-red-600 font-bold text-sm">
-                        ⏰ Expired
+                    {isChallengeCompleted(challenge) && !challenge.winner && (
+                      <div className="flex-1 text-center text-green-600 font-bold text-sm">
+                        ✅ Completed
                       </div>
                     )}
                   </div>

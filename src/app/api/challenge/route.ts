@@ -37,7 +37,7 @@ export async function POST(request: Request) {
             submittedAt: null,
           },
           createdAt: new Date().toISOString(),
-          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
+          expiresAt: null, // No expiration - challenge ends when both players submit
           status: "active",
         };
 
@@ -60,14 +60,17 @@ export async function POST(request: Request) {
 
         const now = new Date().toISOString();
 
-        // Check if challenge is expired
-        if (new Date(existingChallenge.expiresAt) < new Date()) {
-          await collection.updateOne(
-            { id: challengeId },
-            { $set: { status: "expired" } }
-          );
+        // Check if user has already submitted a score
+        const currentUserFid = challenger.fid;
+        const hasAlreadySubmitted =
+          (existingChallenge.challenger.fid === currentUserFid &&
+            existingChallenge.challenger.submittedAt) ||
+          (existingChallenge.challenged.fid === currentUserFid &&
+            existingChallenge.challenged.submittedAt);
+
+        if (hasAlreadySubmitted) {
           return NextResponse.json(
-            { error: "Challenge has expired" },
+            { error: "You have already submitted a score for this challenge" },
             { status: 400 }
           );
         }

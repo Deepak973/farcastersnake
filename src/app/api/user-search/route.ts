@@ -34,14 +34,17 @@ export async function GET(request: Request) {
 
     // Extract and format the user search results from the new response structure
     const users =
-      data.result?.users?.map((user: any) => ({
-        fid: user.fid,
-        username: user.username,
-        displayName: user.display_name,
-        pfpUrl: user.pfp_url,
-        followerCount: user.follower_count,
-        followingCount: user.following_count,
-      })) || [];
+      data.result?.users?.map((user: any) => {
+        console.log("Raw user data from Neynar search:", user); // Debug log
+        return {
+          fid: user.fid,
+          username: user.username,
+          displayName: user.display_name,
+          pfpUrl: user.pfp_url,
+          followerCount: user.follower_count,
+          followingCount: user.following_count,
+        };
+      }) || [];
 
     return NextResponse.json({ users });
   } catch (error) {

@@ -187,18 +187,6 @@ const Challenge: React.FC<ChallengeProps> = ({
     }
   };
 
-  const formatTimeRemaining = (expiresAt: string) => {
-    const now = new Date();
-    const expiry = new Date(expiresAt);
-    const diff = expiry.getTime() - now.getTime();
-
-    if (diff <= 0) return "Expired";
-
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    return `${hours}h ${minutes}m remaining`;
-  };
-
   return (
     <div
       className={`${
@@ -233,13 +221,10 @@ const Challenge: React.FC<ChallengeProps> = ({
               <div className="font-bold mb-2">⚔️ Challenge Rules</div>
               <div className="text-sm">
                 <ul>
-                  <li>Both players start with 0 points </li>
-                  <li>Play the game to achieve your best score </li>
-                  <li>Highest score wins the challenge</li>
-                  <li>
-                    The challenge expires after 24 hours if no score is
-                    submitted
-                  </li>
+                  <li>Both players start with 0 points</li>
+                  <li>Each player can only play once</li>
+                  <li>Play the game to achieve your best score</li>
+                  <li>Challenge ends when both players submit scores</li>
                   <li>Highest score wins the challenge</li>
                 </ul>
               </div>

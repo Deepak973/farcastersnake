@@ -437,20 +437,30 @@ const SnakeGame: React.FC<SnakeGameProps> = ({
 
       if (uniqueFollowers.length === 1) {
         const follower = uniqueFollowers[0];
+        console.log("Single follower username:", follower.username); // Debug log
         shareText += ` I ate @${follower.username}!`;
       } else if (uniqueFollowers.length <= 3) {
-        const names = uniqueFollowers.map((f) => `@${f.username}`).join(", ");
+        const names = uniqueFollowers
+          .map((f) => {
+            console.log("Follower username:", f.username); // Debug log
+            return `@${f.username}`;
+          })
+          .join(", ");
         shareText += ` I ate ${names}!`;
       } else {
         const names = uniqueFollowers
           .slice(0, 3)
-          .map((f) => `@${f.username}`)
+          .map((f) => {
+            console.log("Follower username:", f.username); // Debug log
+            return `@${f.username}`;
+          })
           .join(", ");
         shareText += ` I ate ${names} and ${uniqueFollowers.length - 3} more!`;
       }
     }
 
     shareText += ` Try it out! @1 @2 @3`;
+    console.log("Final share text:", shareText); // Debug log
     return shareText;
   };
 

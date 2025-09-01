@@ -23,12 +23,15 @@ export async function GET(request: Request) {
 
     // Extract and format the followers data
     const followers =
-      data.users?.map((user: any) => ({
-        fid: user.user.fid,
-        username: user.user.username,
-        displayName: user.user.display_name,
-        pfpUrl: user.user.pfp_url,
-      })) || [];
+      data.users?.map((user: any) => {
+        console.log("Raw user data from Neynar:", user.user); // Debug log
+        return {
+          fid: user.user.fid,
+          username: user.user.username,
+          displayName: user.user.display_name,
+          pfpUrl: user.user.pfp_url,
+        };
+      }) || [];
 
     return NextResponse.json({ followers });
   } catch (error) {
