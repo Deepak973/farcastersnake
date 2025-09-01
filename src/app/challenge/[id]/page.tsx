@@ -363,11 +363,11 @@ const ChallengePage: React.FC = () => {
           onGameOver={(score) => {
             setShowGame(false);
             setFinalScore(score);
-            // Defer score submission to avoid setState during render
             setTimeout(() => {
               submitScore(score);
             }, 0);
           }}
+          previousBestScore={previousBestScore}
         />
       </div>
     );

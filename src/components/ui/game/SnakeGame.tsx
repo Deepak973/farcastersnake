@@ -60,9 +60,13 @@ function shuffleArray<T>(array: T[]): T[] {
 
 interface SnakeGameProps {
   onGameOver?: (score: number) => void;
+  previousBestScore?: number | null;
 }
 
-const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
+const SnakeGame: React.FC<SnakeGameProps> = ({
+  onGameOver,
+  previousBestScore: propPreviousBestScore,
+}) => {
   const [snake, setSnake] = useState<Cell[]>(INITIAL_SNAKE);
   const [direction, setDirection] = useState(INITIAL_DIRECTION);
   const [foods, setFoods] = useState<Cell[]>(
@@ -87,7 +91,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
     image: string;
   } | null>(null);
   const [previousBestScore, setPreviousBestScore] = useState<number | null>(
-    null
+    propPreviousBestScore || null
   );
   const [eatenFollowers, setEatenFollowers] = useState<Follower[]>([]);
   const moveRef = useRef(direction);
@@ -123,6 +127,9 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
     };
 
     const fetchPreviousBestScore = async () => {
+      // Only fetch from leaderboard if no previousBestScore prop is provided
+      if (propPreviousBestScore !== undefined) return;
+
       if (!context?.user?.fid && !context?.user?.username) return;
 
       try {
@@ -145,7 +152,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
 
     fetchFollowers();
     fetchPreviousBestScore();
-  }, [context?.user?.fid, context?.user?.username]);
+  }, [context?.user?.fid, context?.user?.username, propPreviousBestScore]);
 
   useEffect(() => {
     // Load sound files
@@ -167,6 +174,20 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
   useEffect(() => {
     moveRef.current = direction;
   }, [direction]);
+
+  // Call onGameOver only once when game over state changes
+  useEffect(() => {
+    if (gameOver && onGameOver) {
+      onGameOver(score);
+    }
+  }, [gameOver, onGameOver, score]);
+
+  // Update previousBestScore when prop changes
+  useEffect(() => {
+    if (propPreviousBestScore !== undefined) {
+      setPreviousBestScore(propPreviousBestScore);
+    }
+  }, [propPreviousBestScore]);
 
   useEffect(() => {
     if (gameOver || !gameStarted) return;
@@ -206,10 +227,6 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
         if (prev.some((cell) => cell.x === newHead.x && cell.y === newHead.y)) {
           setGameOver(true);
           playSound(gameOverSound);
-
-          if (onGameOver) {
-            onGameOver(score);
-          }
           return prev;
         }
 
@@ -238,10 +255,6 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
           if (bitesSinceWater >= 2 || bitesSincePoop >= 5) {
             setGameOver(true);
             playSound(gameOverSound);
-            // Auto-submit score to leaderboard
-            if (onGameOver) {
-              onGameOver(score);
-            }
             return prev;
           }
 
@@ -279,7 +292,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameOver }) => {
 
           setBitesSinceWater(newBites);
           setBitesSincePoop(newPoopCount);
-          setScore((s) => s + 1);
+          setScore((s) => s + 2);
           playSound(biteSound);
 
           if (newBites === 2 && !water) {
