@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import { useMiniApp } from "@neynar/react";
 import Challenge from "../Challenge";
 import { ShareButton } from "../Share";
-import { APP_URL } from "~/lib/constants";
 import { useToast } from "../Toast";
 
 interface ChallengeData {
@@ -49,26 +48,59 @@ export const ChallengesComponent: React.FC<ChallengesComponentProps> = ({
     const isCurrentUserChallenger =
       challenge.challenger.fid === currentUser?.fid;
 
-    console.log(
-      "Challenge challenger username:",
-      challenge.challenger.username
-    ); // Debug log
-    console.log(
-      "Challenge challenged username:",
-      challenge.challenged.username
-    ); // Debug log
-
     if (isCurrentUserChallenger) {
       // Current user is the challenger, tag the challenged person
       const shareText = `⚔️ I challenged @${challenge.challenged.username} to a Farcaster Snake duel! Let's see who gets the highest score! 🐍`;
-      console.log("Challenge share text (challenger):", shareText); // Debug log
       return shareText;
     } else {
       // Current user is the challenged person, tag the challenger
       const shareText = `⚔️ @${challenge.challenger.username} challenged me to a Farcaster Snake duel! Let's see who wins! 🐍`;
-      console.log("Challenge share text (challenged):", shareText); // Debug log
       return shareText;
     }
+  };
+
+  // Generate winner share text
+  const generateWinnerShareText = (challenge: ChallengeData) => {
+    const currentUser = context?.user;
+    const isCurrentUserChallenger =
+      challenge.challenger.fid === currentUser?.fid;
+
+    if (challenge.winner === "challenger") {
+      if (isCurrentUserChallenger) {
+        return `🏆 I just beat @${challenge.challenged.username} in Farcaster Snake! Score: ${challenge.challenger.score} vs ${challenge.challenged.score} 🐍`;
+      } else {
+        return `🏆 @${challenge.challenger.username} just beat me in Farcaster Snake! Score: ${challenge.challenger.score} vs ${challenge.challenged.score} 🐍`;
+      }
+    } else if (challenge.winner === "challenged") {
+      if (!isCurrentUserChallenger) {
+        return `🏆 I just beat @${challenge.challenger.username} in Farcaster Snake! Score: ${challenge.challenged.score} vs ${challenge.challenger.score} 🐍`;
+      } else {
+        return `🏆 @${challenge.challenged.username} just beat me in Farcaster Snake! Score: ${challenge.challenged.score} vs ${challenge.challenger.score} 🐍`;
+      }
+    }
+    return "";
+  };
+
+  // Generate loser share text
+  const generateLoserShareText = (challenge: ChallengeData) => {
+    const currentUser = context?.user;
+    const isCurrentUserChallenger =
+      challenge.challenger.fid === currentUser?.fid;
+
+    if (challenge.winner === "challenger") {
+      if (!isCurrentUserChallenger) {
+        return `😔 I just lost to @${challenge.challenger.username} in Farcaster Snake! Score: ${challenge.challenger.score} vs ${challenge.challenged.score} Better luck next time! 🐍`;
+      } else {
+        return `😔 @${challenge.challenged.username} just lost to me in Farcaster Snake! Score: ${challenge.challenger.score} vs ${challenge.challenged.score} 🐍`;
+      }
+    } else if (challenge.winner === "challenged") {
+      if (isCurrentUserChallenger) {
+        return `😔 I just lost to @${challenge.challenged.username} in Farcaster Snake! Score: ${challenge.challenged.score} vs ${challenge.challenger.score} Better luck next time! 🐍`;
+      } else {
+        return `😔 @${challenge.challenger.username} just lost to me in Farcaster Snake! Score: ${challenge.challenged.score} vs ${challenge.challenger.score} 🐍`;
+      }
+    }
+    return "";
   };
 
   useEffect(() => {
@@ -275,6 +307,38 @@ export const ChallengesComponent: React.FC<ChallengesComponentProps> = ({
                           />
                         </>
                       )}
+
+                    {/* Winner/Loser Share Buttons - Only show when challenge is completed */}
+                    {isChallengeCompleted(challenge) && challenge.winner && (
+                      <>
+                        {/* Winner Share Button */}
+                        <ShareButton
+                          buttonText="🏆 Share Win"
+                          cast={{
+                            text: generateWinnerShareText(challenge),
+                            bestFriends: true,
+                            embeds: [
+                              `https://farcaster.xyz/miniapps/SmXRQmh2Sp33/farcaster-snake/challenge/${challenge.id}`,
+                            ],
+                          }}
+                          className="flex-1 bg-green-500 text-white py-2 px-3 rounded font-bold text-sm hover:bg-green-600 transition-colors"
+                        />
+                        {/* Loser Share Button */}
+                        <ShareButton
+                          buttonText="😔 Share Loss"
+                          cast={{
+                            text: generateLoserShareText(challenge),
+                            bestFriends: true,
+                            embeds: [
+                              `https://farcaster.xyz/miniapps/SmXRQmh2Sp33/farcaster-snake/challenge/${challenge.id}`,
+                            ],
+                          }}
+                          className="flex-1 bg-gray-500 text-white py-2 px-3 rounded font-bold text-sm hover:bg-gray-600 transition-colors"
+                        />
+                      </>
+                    )}
+
+                    {/* Winner Display */}
                     {challenge?.winner && challenge.winner == "challenged" && (
                       <div className="flex-1 text-center text-green-600 font-bold text-sm">
                         🏆 {challenge.challenged.displayName} wins!
