@@ -9,8 +9,8 @@ export function withCors(
   return async (request: NextRequest): Promise<NextResponse> => {
     const origin = request.headers.get("origin");
 
-    // Block requests from unauthorized origins
-    if (origin && origin !== ALLOWED_ORIGIN) {
+    // Block requests without origin OR from unauthorized origins
+    if (!origin || origin !== ALLOWED_ORIGIN) {
       return NextResponse.json(
         { error: "Access denied - unauthorized origin" },
         { status: 403 }
