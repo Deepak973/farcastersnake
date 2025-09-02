@@ -450,7 +450,6 @@ const SnakeGame: React.FC<SnakeGameProps> = ({
       }
     }
 
-    shareText += ` Try it out! @1 @2 @3`;
     return shareText;
   };
 
@@ -669,241 +668,235 @@ const SnakeGame: React.FC<SnakeGameProps> = ({
   }
 
   return (
-    <div className={`game-container ${gameStarted ? "fullscreen" : ""}`}>
-      {!gameStarted ? (
-        <>
-          {showInfoModal && <InfoModal onStart={handleStartGame} />}
-          <Sidebar
-            isOpen={showSidebar}
-            onClose={() => setShowSidebar(false)}
-            onAction={handleSidebarAction}
-          />
-          <button
-            onClick={() => setShowSidebar(true)}
-            className="absolute top-4 right-4 bg-bright-pink text-soft-pink p-2 rounded-lg hover:bg-deep-pink transition-colors z-10"
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
+    <>
+      {showInfoModal && <InfoModal onStart={handleStartGame} />}
+      <div
+        className={`game-container ${gameStarted ? "fullscreen" : ""} ${
+          showInfoModal ? "hidden" : ""
+        }`}
+      >
+        {!gameStarted ? (
+          <>
+            <Sidebar
+              isOpen={showSidebar}
+              onClose={() => setShowSidebar(false)}
+              onAction={handleSidebarAction}
+            />
+            <button
+              onClick={() => setShowSidebar(true)}
+              className="absolute top-4 right-4 bg-bright-pink text-soft-pink p-2 rounded-lg hover:bg-deep-pink transition-colors z-10"
             >
-              <path
-                d="M3 12H21"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M3 6H21"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M3 18H21"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-        </>
-      ) : (
-        <>
-          {gameOver && <GameOverModal />}
-          {gameStarted && (
-            <div className="absolute top-4 left-0 w-full px-6">
-              {/* Top row: Best (left) + Score (center) */}
-              <div className="flex items-center justify-between relative">
-                <div className="text-soft-pink font-bold">
-                  Best: {previousBestScore}
-                </div>
-                <div className="absolute left-1/2 transform -translate-x-1/2 text-soft-pink font-bold">
-                  Score: {score}
-                </div>
-              </div>
-
-              {/* Alerts (below Best on left) */}
-              <div className="absolute top-10 left-0 w-fill px-6">
-                {!gameOver && bitesSinceWater === 2 && (
-                  <div className="alert">DRINK</div>
-                )}
-                {!gameOver && bitesSincePoop === 5 && (
-                  <div className="alert">POOP</div>
-                )}
-                {!gameOver && bitesSincePoop !== 5 && bitesSinceWater !== 2 && (
-                  <div className="alert">EAT</div>
-                )}
-              </div>
-            </div>
-          )}
-
-          <Sidebar
-            isOpen={showSidebar}
-            onClose={() => setShowSidebar(false)}
-            onAction={handleSidebarAction}
-          />
-          <button
-            onClick={() => setShowSidebar(true)}
-            className="absolute top-4 right-4 bg-bright-pink text-soft-pink p-2 rounded-lg hover:bg-deep-pink transition-colors z-10"
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M3 12H21"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M3 6H21"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M3 18H21"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-        </>
-      )}
-
-      {gameStarted && (
-        <div className="game-board-container">
-          {/* Eaten Message */}
-          {eatenMessage && (
-            <div className="eaten-message">
-              <div className="eaten-content">
-                <img
-                  src={eatenMessage.image}
-                  alt={eatenMessage.name}
-                  className="eaten-avatar"
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M3 12H21"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
-                <span className="eaten-text">You ate {eatenMessage.name}!</span>
+                <path
+                  d="M3 6H21"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M3 18H21"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          </>
+        ) : (
+          <>
+            {gameOver && <GameOverModal />}
+            {gameStarted && (
+              <div className="absolute top-4 left-0 w-full px-6">
+                {/* Top row: Best (left) + Score (center) */}
+                <div className="flex items-center justify-between relative">
+                  <div className="text-soft-pink font-bold">
+                    Best: {previousBestScore}
+                  </div>
+                  <div className="absolute left-1/2 transform -translate-x-1/2 text-soft-pink font-bold">
+                    Score: {score}
+                  </div>
+                </div>
+
+                {/* Alerts (below Best on left) */}
+                <div className="absolute top-10 left-0 w-fill px-6">
+                  {!gameOver && bitesSinceWater === 2 && (
+                    <div className="alert">DRINK</div>
+                  )}
+                  {!gameOver && bitesSincePoop === 5 && (
+                    <div className="alert">POOP</div>
+                  )}
+                  {!gameOver &&
+                    bitesSincePoop !== 5 &&
+                    bitesSinceWater !== 2 && <div className="alert">EAT</div>}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          <div className="game-board">
-            <div
-              className="board-grid"
-              style={{
-                gridTemplateRows: `repeat(${BOARD_SIZE}, 40px)`,
-                gridTemplateColumns: `repeat(${BOARD_SIZE}, 40px)`,
-              }}
+            <Sidebar
+              isOpen={showSidebar}
+              onClose={() => setShowSidebar(false)}
+              onAction={handleSidebarAction}
+            />
+            <button
+              onClick={() => setShowSidebar(true)}
+              className="absolute top-4 right-4 bg-bright-pink text-soft-pink p-2 rounded-lg hover:bg-deep-pink transition-colors z-10"
             >
-              {[...Array(BOARD_SIZE * BOARD_SIZE)].map((_, i) => {
-                const x = i % BOARD_SIZE;
-                const y = Math.floor(i / BOARD_SIZE);
-                const isHead = snake[0].x === x && snake[0].y === y;
-                const isBody = snake
-                  .slice(1)
-                  .some((cell) => cell.x === x && cell.y === y);
-                const isFood = foods.some(
-                  (cell) => cell.x === x && cell.y === y
-                );
-                const isWater = water && water.x === x && water.y === y;
-                const isCommode = commode && commode.x === x && commode.y === y;
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M3 12H21"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M3 6H21"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M3 18H21"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          </>
+        )}
 
-                let cellClass = "cell";
-                let content: React.ReactNode = "";
+        {gameStarted && (
+          <div className="game-board-container">
+            {/* Eaten Message */}
+            {eatenMessage && (
+              <div className="eaten-message">
+                <div className="eaten-content">
+                  <img
+                    src={eatenMessage.image}
+                    alt={eatenMessage.name}
+                    className="eaten-avatar"
+                  />
+                  <span className="eaten-text">
+                    You ate {eatenMessage.name}!
+                  </span>
+                </div>
+              </div>
+            )}
 
-                if (isHead) {
-                  content = (
-                    <img
-                      src={context?.user?.pfpUrl || "/farcaster.webp"}
-                      alt="Head"
-                      className="cell-icon"
-                    />
+            <div className="game-board">
+              <div
+                className="board-grid"
+                style={{
+                  gridTemplateRows: `repeat(${BOARD_SIZE}, 40px)`,
+                  gridTemplateColumns: `repeat(${BOARD_SIZE}, 40px)`,
+                }}
+              >
+                {[...Array(BOARD_SIZE * BOARD_SIZE)].map((_, i) => {
+                  const x = i % BOARD_SIZE;
+                  const y = Math.floor(i / BOARD_SIZE);
+                  const isHead = snake[0].x === x && snake[0].y === y;
+                  const isBody = snake
+                    .slice(1)
+                    .some((cell) => cell.x === x && cell.y === y);
+                  const isFood = foods.some(
+                    (cell) => cell.x === x && cell.y === y
                   );
-                } else if (isBody) {
-                  cellClass += " snake-body";
-                }
+                  const isWater = water && water.x === x && water.y === y;
+                  const isCommode =
+                    commode && commode.x === x && commode.y === y;
 
-                if (isFood) {
-                  const currentFollower = getCurrentFollower();
-                  if (currentFollower && currentFollower.pfpUrl) {
+                  let cellClass = "cell";
+                  let content: React.ReactNode = "";
+
+                  if (isHead) {
                     content = (
                       <img
-                        src={currentFollower.pfpUrl}
-                        alt={`${
-                          currentFollower.displayName ||
-                          currentFollower.username
-                        }`}
+                        src={context?.user?.pfpUrl || "/farcaster.webp"}
+                        alt="Head"
                         className="cell-icon"
                       />
                     );
-                  } else {
-                    // Fallback to default food icon
+                  } else if (isBody) {
+                    cellClass += " snake-body";
+                  }
+
+                  if (isFood) {
+                    const currentFollower = getCurrentFollower();
+                    if (currentFollower && currentFollower.pfpUrl) {
+                      content = (
+                        <img
+                          src={currentFollower.pfpUrl}
+                          alt={`${
+                            currentFollower.displayName ||
+                            currentFollower.username
+                          }`}
+                          className="cell-icon"
+                        />
+                      );
+                    } else {
+                      // Fallback to default food icon
+                      content = (
+                        <div className="w-6 h-6 bg-deep-pink rounded-full flex items-center justify-center text-white text-xs">
+                          👤
+                        </div>
+                      );
+                    }
+                  } else if (isWater) {
                     content = (
-                      <div className="w-6 h-6 bg-deep-pink rounded-full flex items-center justify-center text-white text-xs">
-                        👤
-                      </div>
+                      <span className="emoji">
+                        <img src="/drop.png" alt="Water" className="w-6 h-6" />
+                      </span>
+                    );
+                  } else if (isCommode) {
+                    content = (
+                      <span className="emoji">
+                        <img
+                          src="/comode.png"
+                          alt="Commode"
+                          className="w-6 h-6"
+                        />
+                      </span>
                     );
                   }
-                } else if (isWater) {
-                  content = (
-                    <span className="emoji">
-                      <img src="/drop.png" alt="Water" className="w-6 h-6" />
-                    </span>
-                  );
-                } else if (isCommode) {
-                  content = (
-                    <span className="emoji">
-                      <img
-                        src="/comode.png"
-                        alt="Commode"
-                        className="w-6 h-6"
-                      />
-                    </span>
-                  );
-                }
 
-                return (
-                  <div key={i} className={cellClass}>
-                    {content}
-                  </div>
-                );
-              })}
+                  return (
+                    <div key={i} className={cellClass}>
+                      {content}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {gameStarted && !gameOver && (
-        <div className="touch-controls">
-          <button onClick={() => setDirection({ x: 0, y: -1 })}>
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M12 4L20 12L12 20L4 12L12 4Z" fill="currentColor" />
-              <path d="M12 8L16 12L12 16L8 12L12 8Z" fill="white" />
-            </svg>
-          </button>
-
-          <div className="flex items-center justify-center space-x-10">
-            <button onClick={() => setDirection({ x: -1, y: 0 })}>
+        {gameStarted && !gameOver && (
+          <div className="touch-controls">
+            <button onClick={() => setDirection({ x: 0, y: -1 })}>
               <svg
                 width="24"
                 height="24"
@@ -912,10 +905,38 @@ const SnakeGame: React.FC<SnakeGameProps> = ({
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path d="M12 4L20 12L12 20L4 12L12 4Z" fill="currentColor" />
-                <path d="M8 12L12 8L16 12L12 16L8 12Z" fill="white" />
+                <path d="M12 8L16 12L12 16L8 12L12 8Z" fill="white" />
               </svg>
             </button>
-            <button onClick={() => setDirection({ x: 1, y: 0 })}>
+
+            <div className="flex items-center justify-center space-x-10">
+              <button onClick={() => setDirection({ x: -1, y: 0 })}>
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M12 4L20 12L12 20L4 12L12 4Z" fill="currentColor" />
+                  <path d="M8 12L12 8L16 12L12 16L8 12Z" fill="white" />
+                </svg>
+              </button>
+              <button onClick={() => setDirection({ x: 1, y: 0 })}>
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M12 4L20 12L12 20L4 12L12 4Z" fill="currentColor" />
+                  <path d="M16 12L12 8L8 12L12 16L16 12Z" fill="white" />
+                </svg>
+              </button>
+            </div>
+
+            <button onClick={() => setDirection({ x: 0, y: 1 })}>
               <svg
                 width="24"
                 height="24"
@@ -924,26 +945,13 @@ const SnakeGame: React.FC<SnakeGameProps> = ({
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path d="M12 4L20 12L12 20L4 12L12 4Z" fill="currentColor" />
-                <path d="M16 12L12 8L8 12L12 16L16 12Z" fill="white" />
+                <path d="M8 12L12 16L16 12L12 8L8 12Z" fill="white" />
               </svg>
             </button>
           </div>
-
-          <button onClick={() => setDirection({ x: 0, y: 1 })}>
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M12 4L20 12L12 20L4 12L12 4Z" fill="currentColor" />
-              <path d="M8 12L12 16L16 12L12 8L8 12Z" fill="white" />
-            </svg>
-          </button>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </>
   );
 };
 
