@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const ALLOWED_DOMAIN = "https://c3f2f235b241.ngrok-free.app";
+const ALLOWED_DOMAIN = "https://farcastersnake.vercel.app";
 
 export function withCors(
   handler: (request: NextRequest) => Promise<NextResponse>
