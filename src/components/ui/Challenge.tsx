@@ -349,7 +349,7 @@ const Challenge: React.FC<ChallengeProps> = ({
               buttonText="Share Challenge"
               cast={{
                 text: `⚔️ I just challenged @${selectedUser?.username} to a Farcaster Snake duel! Let's see who gets the highest score! 🐍`,
-                bestFriends: true,
+                bestFriends: false,
                 embeds: [challengeLink || ""],
               }}
               className="w-full"

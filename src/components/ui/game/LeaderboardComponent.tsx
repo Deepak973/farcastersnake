@@ -94,15 +94,6 @@ export const LeaderboardComponent: React.FC<LeaderboardComponentProps> = ({
             ))}
           </div>
         )}
-
-        <div className="text-center mt-8">
-          <button
-            onClick={onClose}
-            className="inline-block bg-bright-pink text-soft-pink px-6 py-3 rounded-xl font-bold hover:bg-deep-pink transition-colors"
-          >
-            Back to Game
-          </button>
-        </div>
       </div>
     </div>
   );

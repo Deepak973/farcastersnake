@@ -457,44 +457,76 @@ const SnakeGame: React.FC<SnakeGameProps> = ({
   // Info Modal Component
   const InfoModal = ({ onStart }: { onStart: () => void }) => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-soft-pink rounded-2xl p-6 max-w-md mx-auto border-2 border-deep-pink shadow-2xl">
-        <h3 className="text-deep-pink text-xl font-bold mb-4 text-center">
+      <div className="bg-soft-pink rounded-3xl p-6 max-w-md w-full mx-auto border-2 border-deep-pink shadow-xl relative">
+        {/* Title */}
+        <h3 className="text-deep-pink text-2xl font-extrabold mb-6 text-center">
           How to Play
         </h3>
-        <div className="space-y-3 text-black text-sm">
-          <div className="flex items-center gap-3">
-            <div className="w-6 h-6 bg-deep-pink rounded-full flex items-center justify-center text-white text-xs">
+
+        {/* Instructions */}
+        <div className="space-y-4">
+          {/* Rule Item */}
+          <div className="flex items-start gap-3 p-4 bg-white rounded-xl shadow-md border border-deep-pink hover:scale-[1.02] transition-transform">
+            <div className="w-10 h-10 bg-deep-pink rounded-full flex items-center justify-center text-white text-lg flex-shrink-0">
               👤
             </div>
-            <span>
-              <strong>EAT</strong> - Collect your followers to grow and score
-              points
-            </span>
+            <div>
+              <h4 className="font-bold text-black mb-1">EAT</h4>
+              <p className="text-sm text-gray-700">
+                Collect your followers to grow and score points. Each follower
+                gives you <strong>+2 point</strong>.
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">
-              <img src="/drop.png" alt="Water" className="w-6 h-6" />
-            </span>
-            <span>
-              <strong>DRINK</strong> - Find water after every 2 bites
-            </span>
+
+          <div className="flex items-start gap-3 p-4 bg-white rounded-xl shadow-md border border-deep-pink hover:scale-[1.02] transition-transform">
+            <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
+              <img
+                src="/drop.png"
+                alt="Drink"
+                className="w-6 h-6 object-contain"
+              />
+            </div>
+            <div>
+              <h4 className="font-bold text-black mb-1">DRINK</h4>
+              <p className="text-sm text-gray-700">
+                After every <strong>2 bites</strong>, you must find water. If
+                not, you&apos;ll die of thirst!
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">🚽</span>
-            <span>
-              <strong>POOP</strong> - Find commode after every 5 bites
-            </span>
+
+          <div className="flex items-start gap-3 p-4 bg-white rounded-xl shadow-md border border-deep-pink hover:scale-[1.02] transition-transform">
+            <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center text-white text-lg flex-shrink-0">
+              🚽
+            </div>
+            <div>
+              <h4 className="font-bold text-black mb-1">POOP</h4>
+              <p className="text-sm text-gray-700">
+                After every <strong>5 bites</strong>, you must find a commode or
+                your snake will die!
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
-            <img src="/farcaster.webp" alt="Snake" className="w-6 h-6" />
-            <span>
-              <strong>AVOID</strong> - Don&apos;t hit yourself!
-            </span>
+
+          <div className="flex items-start gap-3 p-4 bg-white rounded-xl shadow-md border border-deep-pink hover:scale-[1.02] transition-transform">
+            <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center text-lg flex-shrink-0">
+              ⚠️
+            </div>
+            <div>
+              <h4 className="font-bold text-black mb-1">AVOID</h4>
+              <p className="text-sm text-gray-700">
+                Don&apos;t hit yourself — the snake dies if it collides with its
+                own body!
+              </p>
+            </div>
           </div>
         </div>
+
+        {/* Action */}
         <button
           onClick={onStart}
-          className="w-full mt-6 bg-bright-pink text-soft-pink py-3 px-4 rounded-xl font-bold hover:bg-deep-pink transition-colors"
+          className="w-full mt-8 bg-bright-pink text-soft-pink py-3 px-4 rounded-xl font-bold text-lg hover:bg-deep-pink transition-colors shadow-md"
         >
           Let&apos;s Play!
         </button>
@@ -569,7 +601,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({
             buttonText="Share Score"
             cast={{
               text: generateShareText(),
-              bestFriends: true,
+              bestFriends: false,
               embeds: [`${APP_URL}/share/${context?.user?.fid || ""}`],
             }}
             className="w-full bg-bright-pink text-soft-pink py-3 px-4 rounded-xl font-bold hover:bg-deep-pink transition-colors"

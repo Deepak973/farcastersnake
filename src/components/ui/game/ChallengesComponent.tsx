@@ -37,337 +37,269 @@ export const ChallengesComponent: React.FC<ChallengesComponentProps> = ({
   onClose,
 }) => {
   const [activeChallenges, setActiveChallenges] = useState<ChallengeData[]>([]);
+  const [previousChallenges, setPreviousChallenges] = useState<ChallengeData[]>(
+    []
+  );
   const [loading, setLoading] = useState(true);
   const [showCreateChallenge, setShowCreateChallenge] = useState(false);
+  const [activeTab, setActiveTab] = useState<"active" | "previous">("active");
   const { context } = useMiniApp();
   const { showToast } = useToast();
-
-  // Generate challenge share text
-  const generateChallengeShareText = (challenge: ChallengeData) => {
-    const currentUser = context?.user;
-    const isCurrentUserChallenger =
-      challenge.challenger.fid === currentUser?.fid;
-
-    if (isCurrentUserChallenger) {
-      // Current user is the challenger, tag the challenged person
-      const shareText = `⚔️ I challenged @${challenge.challenged.username} to a Farcaster Snake duel! Let's see who gets the highest score! 🐍`;
-      return shareText;
-    } else {
-      // Current user is the challenged person, tag the challenger
-      const shareText = `⚔️ @${challenge.challenger.username} challenged me to a Farcaster Snake duel! Let's see who wins! 🐍`;
-      return shareText;
-    }
-  };
-
-  // Generate winner share text
-  const generateWinnerShareText = (challenge: ChallengeData) => {
-    const currentUser = context?.user;
-    const isCurrentUserChallenger =
-      challenge.challenger.fid === currentUser?.fid;
-
-    if (challenge.winner === "challenger") {
-      if (isCurrentUserChallenger) {
-        return `🏆 I just beat @${challenge.challenged.username} in Farcaster Snake! Score: ${challenge.challenger.score} vs ${challenge.challenged.score} 🐍`;
-      } else {
-        return `🏆 @${challenge.challenger.username} just beat me in Farcaster Snake! Score: ${challenge.challenger.score} vs ${challenge.challenged.score} 🐍`;
-      }
-    } else if (challenge.winner === "challenged") {
-      if (!isCurrentUserChallenger) {
-        return `🏆 I just beat @${challenge.challenger.username} in Farcaster Snake! Score: ${challenge.challenged.score} vs ${challenge.challenger.score} 🐍`;
-      } else {
-        return `🏆 @${challenge.challenged.username} just beat me in Farcaster Snake! Score: ${challenge.challenged.score} vs ${challenge.challenger.score} 🐍`;
-      }
-    }
-    return "";
-  };
-
-  // Generate loser share text
-  const generateLoserShareText = (challenge: ChallengeData) => {
-    const currentUser = context?.user;
-    const isCurrentUserChallenger =
-      challenge.challenger.fid === currentUser?.fid;
-
-    if (challenge.winner === "challenger") {
-      if (!isCurrentUserChallenger) {
-        return `😔 I just lost to @${challenge.challenger.username} in Farcaster Snake! Score: ${challenge.challenger.score} vs ${challenge.challenged.score} Better luck next time! 🐍`;
-      } else {
-        return `😔 @${challenge.challenged.username} just lost to me in Farcaster Snake! Score: ${challenge.challenger.score} vs ${challenge.challenged.score} 🐍`;
-      }
-    } else if (challenge.winner === "challenged") {
-      if (isCurrentUserChallenger) {
-        return `😔 I just lost to @${challenge.challenged.username} in Farcaster Snake! Score: ${challenge.challenged.score} vs ${challenge.challenger.score} Better luck next time! 🐍`;
-      } else {
-        return `😔 @${challenge.challenger.username} just lost to me in Farcaster Snake! Score: ${challenge.challenged.score} vs ${challenge.challenger.score} 🐍`;
-      }
-    }
-    return "";
-  };
 
   useEffect(() => {
     const fetchChallenges = async () => {
       if (!context?.user?.fid) return;
-
       try {
-        console.log("Fetching challenges for FID:", context.user.fid);
         const response = await fetch(`/api/challenge?fid=${context.user.fid}`);
-        console.log("Challenges response status:", response.status);
         const data = await response.json();
-        console.log("Challenges response data:", data);
-        setActiveChallenges(data.challenges || []);
+        const challenges = data.challenges || [];
+
+        // Separate active and previous challenges
+        const active = challenges.filter(
+          (challenge: ChallengeData) =>
+            challenge.status === "active" ||
+            (!challenge.challenger.score && !challenge.challenged.score)
+        );
+        const previous = challenges.filter(
+          (challenge: ChallengeData) =>
+            challenge.status === "completed" ||
+            (challenge.challenger.score && challenge.challenged.score)
+        );
+
+        setActiveChallenges(active);
+        setPreviousChallenges(previous);
       } catch (error) {
         console.error("Failed to fetch challenges:", error);
       } finally {
         setLoading(false);
       }
     };
-
     fetchChallenges();
   }, [context?.user?.fid, showCreateChallenge]);
 
-  const isChallengeCompleted = (challenge: ChallengeData) => {
-    return (
-      challenge.status === "completed" ||
-      (challenge.challenger.submittedAt && challenge.challenged.submittedAt)
-    );
-  };
-
   const getChallengeStatus = (challenge: ChallengeData) => {
-    if (isChallengeCompleted(challenge)) {
+    if (challenge.status === "completed") return "Completed";
+    if (challenge.challenger.score && challenge.challenged.score)
       return "Completed";
-    }
-    if (challenge.challenger.submittedAt && !challenge.challenged.submittedAt) {
+    if (challenge.challenger.score || challenge.challenged.score)
       return "Waiting for opponent";
-    }
-    if (challenge.challenged.submittedAt && !challenge.challenger.submittedAt) {
-      return "Waiting for opponent";
-    }
     return "Active";
   };
 
-  const getLeader = (challenge: ChallengeData) => {
-    // Handle cases where scores might be undefined or null
-    const challengerScore = challenge.challenger.score || 0;
-    const challengedScore = challenge.challenged.score || 0;
+  const renderChallenges = (challenges: ChallengeData[]) => {
+    if (challenges.length === 0) {
+      return (
+        <div className="text-center text-black py-8">
+          <div className="text-2xl mb-4">
+            {activeTab === "active" ? "⚔️" : "🏆"}
+          </div>
+          <p className="text-lg">
+            {activeTab === "active"
+              ? "No active challenges! Create one to get started!"
+              : "No previous challenges yet!"}
+          </p>
+        </div>
+      );
+    }
 
-    if (challengerScore === 0 && challengedScore === 0) {
-      return null;
-    }
-    if (challengerScore === 0) {
-      return challenge.challenged;
-    }
-    if (challengedScore === 0) {
-      return challenge.challenger;
-    }
-    if (challengerScore > challengedScore) {
-      return challenge.challenger;
-    }
-    if (challengedScore > challengerScore) {
-      return challenge.challenged;
-    }
-    return null; // Tie
+    return (
+      <div className="space-y-4">
+        {challenges.map((challenge) => (
+          <div
+            key={challenge.id}
+            className="bg-white rounded-xl p-6 border-2 border-deep-pink flex flex-col items-center text-center"
+          >
+            {/* Players Row */}
+            <div className="flex justify-between items-start w-full">
+              {/* Challenger */}
+              <div className="flex flex-col items-center w-1/3 relative">
+                <div className="relative">
+                  {challenge.winner === "challenger" && (
+                    <span className="absolute -top-6 left-1/2 transform -translate-x-1/2 text-yellow-400 text-3xl z-10">
+                      👑
+                    </span>
+                  )}
+                  <img
+                    src={challenge.challenger.pfpUrl}
+                    alt={challenge.challenger.displayName}
+                    className="w-14 h-14 rounded-full border-2 border-deep-pink"
+                  />
+                </div>
+                <h3 className="font-bold text-black mt-2">
+                  {challenge.challenger.displayName}
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Score: {challenge.challenger.score ?? "Not played"}
+                </p>
+              </div>
+
+              {/* VS */}
+              <div className="flex flex-col items-center justify-center w-1/3">
+                <div className="text-3xl">⚔️</div>
+                <div className="text-xs text-gray-600">VS</div>
+              </div>
+
+              {/* Challenged */}
+              <div className="flex flex-col items-center w-1/3 relative">
+                <div className="relative">
+                  {challenge.winner === "challenged" && (
+                    <span className="absolute -top-4 left-1/2 transform -translate-x-1/2 text-yellow-400 text-2xl z-10">
+                      👑
+                    </span>
+                  )}
+                  <img
+                    src={challenge.challenged.pfpUrl}
+                    alt={challenge.challenged.displayName}
+                    className="w-14 h-14 rounded-full border-2 border-deep-pink"
+                  />
+                </div>
+                <h3 className="font-bold text-black mt-2">
+                  {challenge.challenged.displayName}
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Score: {challenge.challenged.score ?? "Not played"}
+                </p>
+              </div>
+            </div>
+
+            {/* Status */}
+            <div className="mt-4 text-sm text-gray-700">
+              Status: {getChallengeStatus(challenge)}
+            </div>
+
+            {/* Actions */}
+            <div className="mt-4 w-full flex flex-col space-y-3">
+              {challenge.status === "active" ? (
+                <>
+                  <a
+                    href={`/challenge/${challenge.id}`}
+                    className="block w-full bg-bright-pink text-soft-pink px-6 py-3 rounded-xl font-bold hover:bg-deep-pink transition-colors"
+                  >
+                    Play Challenge
+                  </a>
+
+                  {/* Share Active Challenge */}
+                  <ShareButton
+                    buttonText="Share Challenge"
+                    cast={{
+                      text: `⚔️ I challenged @${challenge.challenged.username} to a game of Farcaster Snake! 🐍 Watch the challenge here:`,
+                      bestFriends: false,
+                      embeds: [
+                        `https://farcaster.xyz/miniapps/SmXRQmh2Sp33/farcaster-snake/challenge/${challenge.id}`,
+                      ],
+                    }}
+                    className="w-full bg-blue-500 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-600 transition-colors"
+                  />
+                </>
+              ) : challenge.winner ? (
+                <>
+                  <ShareButton
+                    buttonText="Share Winner"
+                    cast={{
+                      text: `🏆 @${
+                        challenge.winner === "challenger"
+                          ? challenge.challenger.username
+                          : challenge.challenged.username
+                      } won the Farcaster Snake challenge! Score: ${
+                        challenge.winner === "challenger"
+                          ? challenge.challenger.score
+                          : challenge.challenged.score
+                      } vs ${
+                        challenge.winner === "challenger"
+                          ? challenge.challenged.score
+                          : challenge.challenger.score
+                      } 🐍`,
+                      bestFriends: false,
+                      embeds: [
+                        `https://farcaster.xyz/miniapps/SmXRQmh2Sp33/farcaster-snake/challenge/${challenge.id}`,
+                      ],
+                    }}
+                    className="flex items-center justify-center space-x-2 w-full px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl font-bold transition-colors"
+                  />
+                </>
+              ) : null}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold text-soft-pink text-center mb-6">
-          ⚔️ Challenges
-        </h1>
+    <div className="min-h-screen bg-gradient-to-br from-deep-pink to-black">
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-4xl font-bold text-soft-pink text-center mb-8">
+            ⚔️ Challenges
+          </h1>
 
-        <div className="text-center mb-4">
-          <button
-            onClick={() => setShowCreateChallenge(!showCreateChallenge)}
-            className="bg-bright-pink text-soft-pink px-4 py-2 rounded-lg font-bold hover:bg-deep-pink transition-colors text-sm"
-          >
-            {showCreateChallenge ? "❌ Cancel" : "➕ Create Challenge"}
-          </button>
-        </div>
-
-        {showCreateChallenge && (
-          <div className="bg-white rounded-lg p-4 shadow-lg mb-6">
-            <Challenge
-              isEmbedded={true}
-              setShowCreateChallenge={setShowCreateChallenge}
-            />
+          <div className="text-center mb-8">
+            <button
+              onClick={() => setShowCreateChallenge(!showCreateChallenge)}
+              className="bg-bright-pink text-soft-pink px-6 py-3 rounded-xl font-bold hover:bg-deep-pink transition-colors"
+            >
+              {showCreateChallenge ? "❌ Cancel" : "➕ Create Challenge"}
+            </button>
           </div>
-        )}
 
-        <div className="bg-white rounded-lg p-4 shadow-lg">
-          <h3 className="text-lg font-bold text-deep-pink mb-4 text-center">
-            Active Challenges
-          </h3>
-
-          {loading ? (
-            <div className="text-center text-black py-6">
-              <div className="text-sm">Loading challenges...</div>
-            </div>
-          ) : activeChallenges.length === 0 ? (
-            <div className="text-center text-black py-6">
-              <div className="text-2xl mb-3">⚔️</div>
-              <p className="text-sm text-gray-600">
-                No active challenges! Create one to get started!
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {activeChallenges.map((challenge) => (
-                <div
-                  key={challenge.id}
-                  className="bg-soft-pink rounded-lg p-4 border-2 border-deep-pink"
-                >
-                  {/* Challenge Header - Simplified */}
-                  <div className="flex items-center justify-between mb-3">
-                    {/* Challenger */}
-                    <div className="flex items-center gap-2">
-                      <img
-                        src={challenge.challenger.pfpUrl}
-                        alt={challenge.challenger.displayName}
-                        className="w-8 h-8 rounded-full border border-deep-pink"
-                      />
-                      <span className="font-bold text-black text-sm">
-                        {challenge.challenger.displayName}
-                      </span>
-                    </div>
-
-                    {/* VS */}
-                    <div className="text-center">
-                      <div className="text-lg">⚔️</div>
-                    </div>
-
-                    {/* Challenged */}
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-black text-sm">
-                        {challenge.challenged.displayName}
-                      </span>
-                      <img
-                        src={challenge.challenged.pfpUrl}
-                        alt={challenge.challenged.displayName}
-                        className="w-8 h-8 rounded-full border border-deep-pink"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Scores - Clean Display */}
-                  <div className="flex justify-between items-center mb-3 bg-white rounded-lg p-2">
-                    <div className="text-center">
-                      <div className="text-lg font-bold text-deep-pink">
-                        {challenge.challenger.score || 0}
-                      </div>
-                      <div className="text-xs text-gray-500">Score</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-lg font-bold text-deep-pink">
-                        {challenge.challenged.score || 0}
-                      </div>
-                      <div className="text-xs text-gray-500">Score</div>
-                    </div>
-                  </div>
-
-                  {/* Status - Simplified */}
-                  <div className="flex justify-between items-center mb-3">
-                    <div className="text-xs text-gray-600">
-                      {getChallengeStatus(challenge)}
-                    </div>
-                    <div className="text-xs font-bold text-green-600">
-                      {isChallengeCompleted(challenge) ? "Finished" : "Active"}
-                    </div>
-                  </div>
-
-                  {/* Action Buttons - Clean */}
-                  <div className="flex gap-2">
-                    {challenge.status === "active" &&
-                      !isChallengeCompleted(challenge) && (
-                        <>
-                          <a
-                            href={`/challenge/${challenge.id}`}
-                            className="flex-1 bg-bright-pink text-soft-pink py-2 px-3 rounded font-bold text-sm hover:bg-deep-pink transition-colors text-center"
-                          >
-                            🎮 Play
-                          </a>
-                          <button
-                            onClick={() => {
-                              const challengeUrl = `https://farcaster.xyz/miniapps/SmXRQmh2Sp33/farcaster-snake/challenge/${challenge.id}`;
-                              navigator.clipboard.writeText(challengeUrl);
-                              showToast("Challenge link copied!", "success");
-                            }}
-                            className="bg-deep-pink text-soft-pink py-2 px-3 rounded font-bold text-sm hover:bg-bright-pink transition-colors"
-                          >
-                            📋 Copy
-                          </button>
-                          <ShareButton
-                            buttonText="Share"
-                            cast={{
-                              text: generateChallengeShareText(challenge),
-                              bestFriends: true,
-                              embeds: [
-                                `https://farcaster.xyz/miniapps/SmXRQmh2Sp33/farcaster-snake/challenge/${challenge.id}`,
-                              ],
-                            }}
-                            className="bg-deep-pink text-soft-pink py-2 px-3 rounded font-bold text-sm hover:bg-bright-pink transition-colors"
-                          />
-                        </>
-                      )}
-
-                    {/* Winner/Loser Share Buttons - Only show when challenge is completed */}
-                    {isChallengeCompleted(challenge) && challenge.winner && (
-                      <>
-                        {/* Winner Share Button */}
-                        <ShareButton
-                          buttonText="🏆 Share Win"
-                          cast={{
-                            text: generateWinnerShareText(challenge),
-                            bestFriends: true,
-                            embeds: [
-                              `https://farcaster.xyz/miniapps/SmXRQmh2Sp33/farcaster-snake/challenge/${challenge.id}`,
-                            ],
-                          }}
-                          className="flex-1 bg-green-500 text-white py-2 px-3 rounded font-bold text-sm hover:bg-green-600 transition-colors"
-                        />
-                        {/* Loser Share Button */}
-                        <ShareButton
-                          buttonText="😔 Share Loss"
-                          cast={{
-                            text: generateLoserShareText(challenge),
-                            bestFriends: true,
-                            embeds: [
-                              `https://farcaster.xyz/miniapps/SmXRQmh2Sp33/farcaster-snake/challenge/${challenge.id}`,
-                            ],
-                          }}
-                          className="flex-1 bg-gray-500 text-white py-2 px-3 rounded font-bold text-sm hover:bg-gray-600 transition-colors"
-                        />
-                      </>
-                    )}
-
-                    {/* Winner Display */}
-                    {challenge?.winner && challenge.winner == "challenged" && (
-                      <div className="flex-1 text-center text-green-600 font-bold text-sm">
-                        🏆 {challenge.challenged.displayName} wins!
-                      </div>
-                    )}
-                    {challenge?.winner && challenge.winner == "challenger" && (
-                      <div className="flex-1 text-center text-green-600 font-bold text-sm">
-                        🏆 {challenge.challenger.displayName} wins!
-                      </div>
-                    )}
-                    {isChallengeCompleted(challenge) && !challenge.winner && (
-                      <div className="flex-1 text-center text-green-600 font-bold text-sm">
-                        ✅ Completed
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
+          {showCreateChallenge && (
+            <div className="bg-soft-pink rounded-2xl p-6 shadow-2xl mb-8">
+              <Challenge
+                isEmbedded={true}
+                setShowCreateChallenge={setShowCreateChallenge}
+              />
             </div>
           )}
-        </div>
 
-        <div className="text-center mt-8">
-          <button
-            onClick={onClose}
-            className="inline-block bg-bright-pink text-soft-pink px-6 py-3 rounded-xl font-bold hover:bg-deep-pink transition-colors"
-          >
-            🎮 Back to Game
-          </button>
+          <div className="bg-soft-pink rounded-2xl p-6 shadow-2xl">
+            {/* Tabs */}
+            <div className="flex justify-center mb-6">
+              <div className="bg-white rounded-xl p-1 border-2 border-deep-pink">
+                <button
+                  onClick={() => setActiveTab("active")}
+                  className={`px-6 py-2 rounded-lg font-bold transition-colors ${
+                    activeTab === "active"
+                      ? "bg-bright-pink text-soft-pink"
+                      : "text-gray-600 hover:text-deep-pink"
+                  }`}
+                >
+                  Active ({activeChallenges.length})
+                </button>
+                <button
+                  onClick={() => setActiveTab("previous")}
+                  className={`px-6 py-2 rounded-lg font-bold transition-colors ${
+                    activeTab === "previous"
+                      ? "bg-bright-pink text-soft-pink"
+                      : "text-gray-600 hover:text-deep-pink"
+                  }`}
+                >
+                  Previous ({previousChallenges.length})
+                </button>
+              </div>
+            </div>
+
+            {/* Tab Content */}
+            <div className="text-center">
+              {loading ? (
+                <div className="text-center text-black py-8">
+                  Loading challenges...
+                </div>
+              ) : (
+                renderChallenges(
+                  activeTab === "active" ? activeChallenges : previousChallenges
+                )
+              )}
+            </div>
+          </div>
+
+          <div className="text-center mt-8">
+            <button
+              onClick={onClose}
+              className="inline-block bg-bright-pink text-soft-pink px-6 py-3 rounded-xl font-bold hover:bg-deep-pink transition-colors"
+            >
+              🎮 Back to Game
+            </button>
+          </div>
         </div>
       </div>
     </div>

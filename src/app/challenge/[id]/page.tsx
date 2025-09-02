@@ -367,184 +367,132 @@ const ChallengePage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-deep-pink to-black p-4">
+    <div className="min-h-screen bg-gradient-to-b from-deep-pink to-black p-4 flex items-center justify-center relative">
+      {/* Sidebar */}
       <Sidebar
         isOpen={showSidebar}
         onClose={() => setShowSidebar(false)}
         onAction={handleSidebarAction}
       />
+
+      {/* Sidebar Toggle (Top Left) */}
       <button
         onClick={() => setShowSidebar(true)}
         className="absolute top-4 right-4 bg-bright-pink text-soft-pink p-2 rounded-lg hover:bg-deep-pink transition-colors z-10"
       >
         <svg
-          width="20"
-          height="20"
+          width="22"
+          height="22"
           viewBox="0 0 24 24"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
-            d="M3 12H21"
+            d="M3 6H21M3 12H21M3 18H21"
             stroke="currentColor"
             strokeWidth="2"
             strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M3 6H21"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M3 18H21"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
           />
         </svg>
       </button>
-      <div className="max-w-md mx-auto">
+
+      {/* Game Card */}
+      <div className="w-full max-w-md">
         <div className="bg-soft-pink rounded-2xl p-6 border-2 border-deep-pink shadow-2xl">
+          {/* Title */}
           <h1 className="text-deep-pink text-2xl font-bold text-center mb-6">
-            ⚔️ Snake Challenge
+            Snake Challenge
           </h1>
 
-          <div className="space-y-4">
-            {/* Players */}
-            <div className="flex justify-between items-center">
-              <div className="text-center">
-                <img
-                  src={challenge.challenger.pfpUrl}
-                  alt={challenge.challenger.displayName}
-                  className="w-16 h-16 rounded-full border-2 border-deep-pink mx-auto mb-2"
-                />
-                <div className="text-black font-bold">
-                  {challenge.challenger.displayName ||
-                    challenge.challenger.username}
-                </div>
-                <div className="text-bright-pink font-bold">
-                  {challenge.challenger.score} pts
-                </div>
-                {challenge.challenger.submittedAt && (
-                  <div className="text-xs text-gray-600"> Submitted</div>
-                )}
+          {/* Players vs */}
+          <div className="flex items-center justify-between mb-6">
+            {/* Challenger */}
+            <div className="flex flex-col items-center">
+              <img
+                src={challenge.challenger.pfpUrl}
+                alt={challenge.challenger.displayName}
+                className="w-16 h-16 rounded-full border-2 border-deep-pink mb-2"
+              />
+              <div className="text-black font-bold text-sm truncate w-20 text-center">
+                {challenge.challenger.displayName ||
+                  challenge.challenger.username}
               </div>
+              <div className="text-bright-pink font-bold text-xs">
+                {challenge.challenger.score} pts
+              </div>
+            </div>
 
-              <div className="text-deep-pink text-2xl font-bold">VS</div>
+            {/* VS */}
+            <div className="text-deep-pink text-xl font-extrabold">VS</div>
 
-              <div className="text-center">
-                <img
-                  src={challenge.challenged.pfpUrl}
-                  alt={challenge.challenged.displayName}
-                  className="w-16 h-16 rounded-full border-2 border-deep-pink mx-auto mb-2"
-                />
-                <div className="text-black font-bold">
-                  {challenge.challenged.displayName ||
+            {/* Challenged */}
+            <div className="flex flex-col items-center">
+              <img
+                src={challenge.challenged.pfpUrl}
+                alt={challenge.challenged.displayName}
+                className="w-16 h-16 rounded-full border-2 border-deep-pink mb-2"
+              />
+              <div className="text-black font-bold text-sm truncate w-20 text-center">
+                {challenge.challenged.displayName ||
+                  challenge.challenged.username}
+              </div>
+              <div className="text-bright-pink font-bold text-xs">
+                {challenge.challenged.score} pts
+              </div>
+            </div>
+          </div>
+
+          {/* Status */}
+          <div className="text-center mb-4">
+            <div className="text-black font-bold">
+              {challenge.status.toUpperCase()}
+            </div>
+            <div className="text-xs text-gray-600">
+              {isChallengeCompleted()
+                ? "Both players submitted"
+                : "Waiting for submissions"}
+            </div>
+          </div>
+
+          {/* Winner */}
+          {challenge.status === "completed" && challenge.winner && (
+            <div className="text-center bg-bright-pink text-soft-pink p-3 rounded-xl mt-4">
+              <div className="text-lg font-bold">
+                Winner:{" "}
+                {challenge.winner === "challenger"
+                  ? challenge.challenger.displayName ||
+                    challenge.challenger.username
+                  : challenge.challenged.displayName ||
                     challenge.challenged.username}
-                </div>
-                <div className="text-bright-pink font-bold">
-                  {challenge.challenged.score} pts
-                </div>
-                {challenge.challenged.submittedAt && (
-                  <div className="text-xs text-gray-600">Submitted</div>
-                )}
               </div>
             </div>
+          )}
 
-            {/* Status */}
-            <div className="text-center">
-              <div className="text-black font-bold mb-2">
-                Status: {challenge.status.toUpperCase()}
-              </div>
-              <div className="text-sm text-gray-600">
-                {isChallengeCompleted()
-                  ? "Both players have submitted"
-                  : "Waiting for both players"}
-              </div>
-            </div>
-
-            {/* Previous Best Score */}
-            {previousBestScore !== null &&
-              (isCurrentUserChallenger || isCurrentUserChallenged) && (
-                <div className="text-center bg-gray-100 p-3 rounded-xl">
-                  <div className="text-black font-bold text-sm mb-1">
-                    Your Challenge Best Score
-                  </div>
-                  <div className="text-bright-pink font-bold text-lg">
-                    {previousBestScore} pts
-                  </div>
-                </div>
-              )}
-
-            {/* Current Challenge Score */}
-            {_finalScore !== null &&
-              (isCurrentUserChallenger || isCurrentUserChallenged) && (
-                <div className="text-center bg-blue-100 p-3 rounded-xl">
-                  <div className="text-black font-bold text-sm mb-1">
-                    Current Challenge Score
-                  </div>
-                  <div className="text-bright-pink font-bold text-lg">
-                    {_finalScore} pts
-                  </div>
-                  {previousBestScore !== null &&
-                    _finalScore > previousBestScore && (
-                      <div className="text-green-600 font-bold text-sm mt-1">
-                        New Challenge Best!
-                      </div>
-                    )}
-                </div>
-              )}
-
-            {/* Winner */}
-            {challenge.status === "completed" && challenge.winner && (
-              <div className="text-center bg-bright-pink text-soft-pink p-4 rounded-xl">
-                <div className="text-xl font-bold">
-                  🏆 Winner:{" "}
-                  {challenge.winner === "challenger"
-                    ? challenge.challenger.displayName ||
-                      challenge.challenger.username
-                    : challenge.challenged.displayName ||
-                      challenge.challenged.username}
-                </div>
-              </div>
-            )}
-
-            {/* Action Button */}
+          {/* Action / Spectator */}
+          <div className="mt-6">
             {challenge.status === "active" &&
-              (isCurrentUserChallenger || isCurrentUserChallenged) && (
-                <div className="space-y-3">
-                  {!hasSubmitted ? (
-                    <button
-                      onClick={() => {
-                        setShowGame(true);
-                        setScoreSubmitted(false); // Reset flag when starting new game
-                      }}
-                      className="w-full bg-bright-pink text-soft-pink py-4 px-6 rounded-xl font-bold text-lg hover:bg-deep-pink transition-colors"
-                    >
-                      🎮 Play Now!
-                    </button>
-                  ) : (
-                    <div className="text-center bg-blue-100 text-blue-800 p-3 rounded-xl">
-                      <div className="font-bold text-sm">Score Submitted!</div>
-                      <div className="text-xs">
-                        You have already submitted your score for this
-                        challenge.
-                      </div>
-                    </div>
-                  )}
+              (isCurrentUserChallenger || isCurrentUserChallenged) &&
+              (!hasSubmitted ? (
+                <button
+                  onClick={() => {
+                    setShowGame(true);
+                    setScoreSubmitted(false);
+                  }}
+                  className="w-full bg-bright-pink text-soft-pink py-3 rounded-xl font-bold text-base hover:bg-deep-pink transition"
+                >
+                  Play Now
+                </button>
+              ) : (
+                <div className="text-center bg-blue-100 text-blue-800 p-2 rounded-xl">
+                  <div className="font-bold text-sm">Score Submitted</div>
+                  <div className="text-xs">You can’t submit again</div>
                 </div>
-              )}
+              ))}
 
             {!isCurrentUserChallenger && !isCurrentUserChallenged && (
-              <div className="text-center bg-gray-100 text-gray-800 p-4 rounded-xl">
-                <div className="font-bold">👀 Spectator Mode</div>
-                <div className="text-sm">
-                  This challenge is between other players
-                </div>
+              <div className="text-center bg-gray-100 text-gray-800 p-3 rounded-xl">
+                <div className="font-bold text-sm">Spectator Mode</div>
+                <div className="text-xs">You’re watching this challenge</div>
               </div>
             )}
           </div>
