@@ -94,6 +94,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({
     propPreviousBestScore || null
   );
   const [eatenFollowers, setEatenFollowers] = useState<Follower[]>([]);
+
   const moveRef = useRef(direction);
   const { address } = useAccount();
   const { context } = useMiniApp();
@@ -420,7 +421,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({
 
         return [newHead, ...prev.slice(0, -1)];
       });
-    }, 250);
+    }, 250); // Slower movement for better control
     return () => clearInterval(interval);
   }, [
     foods,
@@ -969,7 +970,10 @@ const SnakeGame: React.FC<SnakeGameProps> = ({
               {[...Array(BOARD_SIZE * BOARD_SIZE)].map((_, i) => {
                 const x = i % BOARD_SIZE;
                 const y = Math.floor(i / BOARD_SIZE);
-                const isHead = snake[0].x === x && snake[0].y === y;
+
+                // Use smooth position for head, actual snake array for body
+                const isHead =
+                  Math.floor(snake[0].x) === x && Math.floor(snake[0].y) === y;
                 const isBody = snake
                   .slice(1)
                   .some((cell) => cell.x === x && cell.y === y);
@@ -984,52 +988,161 @@ const SnakeGame: React.FC<SnakeGameProps> = ({
 
                 if (isHead) {
                   content = (
-                    <img
-                      src={context?.user?.pfpUrl || "/farcaster.webp"}
-                      alt="Head"
-                      className="cell-icon"
-                    />
+                    <div className="relative group">
+                      {/* Glowing background effect for head */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 rounded-lg opacity-70 blur-sm scale-110 animate-pulse"></div>
+
+                      {/* Head container with gaming frame */}
+                      <div className="relative z-10 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg p-1 border-2 border-cyan-400 shadow-lg">
+                        <img
+                          src={context?.user?.pfpUrl || "/farcaster.webp"}
+                          alt="Snake Head"
+                          className="w-full h-full rounded-md object-cover"
+                          style={{
+                            boxShadow: "0 0 15px rgba(0, 255, 255, 0.7)",
+                            filter:
+                              "drop-shadow(0 0 8px rgba(138, 43, 226, 0.8))",
+                          }}
+                        />
+                      </div>
+
+                      {/* Crown indicator for head */}
+                      <div className="absolute -top-2 -right-2 w-4 h-4 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full animate-bounce opacity-90 flex items-center justify-center">
+                        <span className="text-xs">👑</span>
+                      </div>
+                    </div>
                   );
                 } else if (isBody) {
                   cellClass += " snake-body";
+                  // Add creative body content based on eaten followers
+                  const bodyIndex =
+                    snake.findIndex((cell) => cell.x === x && cell.y === y) - 1;
+                  if (bodyIndex < eatenFollowers.length) {
+                    const eatenFollower = eatenFollowers[bodyIndex];
+                    content = (
+                      <div className="relative group">
+                        {/* Subtle glowing background for body */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/30 to-purple-500/30 rounded-md opacity-40 blur-sm scale-105"></div>
+
+                        {/* Body segment with eaten follower */}
+                        <div className="relative z-10 bg-gradient-to-br from-slate-700 to-slate-800 rounded-md p-0.5 border border-cyan-400/30 shadow-md">
+                          <img
+                            src={eatenFollower.pfpUrl}
+                            alt={`${
+                              eatenFollower.displayName ||
+                              eatenFollower.username
+                            }`}
+                            className="w-full h-full rounded-sm object-cover"
+                            style={{
+                              boxShadow: "0 0 5px rgba(0, 255, 255, 0.3)",
+                              filter:
+                                "drop-shadow(0 0 3px rgba(138, 43, 226, 0.4))",
+                            }}
+                          />
+                        </div>
+
+                        {/* Small indicator dot */}
+                        <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-gradient-to-r from-cyan-400 to-purple-500 rounded-full opacity-60"></div>
+                      </div>
+                    );
+                  }
                 }
 
                 if (isFood) {
                   const currentFollower = getCurrentFollower();
                   if (currentFollower && currentFollower.pfpUrl) {
                     content = (
-                      <img
-                        src={currentFollower.pfpUrl}
-                        alt={`${
-                          currentFollower.displayName ||
-                          currentFollower.username
-                        }`}
-                        className="cell-icon"
-                      />
+                      <div className="relative group">
+                        {/* Glowing background effect */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-purple-500 rounded-lg opacity-60 blur-sm scale-110 animate-pulse"></div>
+
+                        {/* Profile image with gaming frame */}
+                        <div className="relative z-10 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg p-1 border border-cyan-400/50 shadow-lg">
+                          <img
+                            src={currentFollower.pfpUrl}
+                            alt={`${
+                              currentFollower.displayName ||
+                              currentFollower.username
+                            }`}
+                            className="w-full h-full rounded-md object-cover"
+                            style={{
+                              boxShadow: "0 0 10px rgba(0, 255, 255, 0.5)",
+                              filter:
+                                "drop-shadow(0 0 5px rgba(138, 43, 226, 0.6))",
+                            }}
+                          />
+                        </div>
+
+                        {/* Floating indicator */}
+                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-cyan-400 to-purple-500 rounded-full animate-pulse opacity-80"></div>
+                      </div>
                     );
                   } else {
-                    // Fallback to default food icon
+                    // Fallback to enhanced default food icon
                     content = (
-                      <div className="w-6 h-6 bg-deep-pink rounded-full flex items-center justify-center text-white text-xs">
-                        👤
+                      <div className="relative group">
+                        {/* Glowing background */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-pink-400 to-purple-500 rounded-lg opacity-60 blur-sm scale-110 animate-pulse"></div>
+
+                        {/* Enhanced default icon */}
+                        <div className="relative z-10 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg p-2 border border-pink-400/50 shadow-lg flex items-center justify-center">
+                          <div className="text-lg font-bold text-white animate-bounce">
+                            👤
+                          </div>
+                        </div>
+
+                        {/* Floating indicator */}
+                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-pink-400 to-purple-500 rounded-full animate-pulse opacity-80"></div>
                       </div>
                     );
                   }
                 } else if (isWater) {
                   content = (
-                    <span className="emoji">
-                      <img src="/drop.png" alt="Water" className="w-6 h-6" />
-                    </span>
+                    <div className="relative group">
+                      {/* Glowing background effect */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-lg opacity-60 blur-sm scale-110 animate-pulse"></div>
+
+                      {/* Water drop with gaming frame */}
+                      <div className="relative z-10 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg p-1 border border-blue-400/50 shadow-lg">
+                        <img
+                          src="/drop.png"
+                          alt="Water"
+                          className="w-full h-full rounded-md object-contain"
+                          style={{
+                            boxShadow: "0 0 10px rgba(59, 130, 246, 0.5)",
+                            filter:
+                              "drop-shadow(0 0 5px rgba(0, 255, 255, 0.6))",
+                          }}
+                        />
+                      </div>
+
+                      {/* Floating indicator */}
+                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-full animate-pulse opacity-80"></div>
+                    </div>
                   );
                 } else if (isCommode) {
                   content = (
-                    <span className="emoji">
-                      <img
-                        src="/comode.png"
-                        alt="Commode"
-                        className="w-6 h-6"
-                      />
-                    </span>
+                    <div className="relative group">
+                      {/* Glowing background effect */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-slate-500 to-slate-600 rounded-lg opacity-60 blur-sm scale-110 animate-pulse"></div>
+
+                      {/* Commode with gaming frame */}
+                      <div className="relative z-10 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg p-1 border border-slate-400/50 shadow-lg">
+                        <img
+                          src="/comode.png"
+                          alt="Commode"
+                          className="w-full h-full rounded-md object-contain"
+                          style={{
+                            boxShadow: "0 0 10px rgba(148, 163, 184, 0.5)",
+                            filter:
+                              "drop-shadow(0 0 5px rgba(75, 85, 99, 0.6))",
+                          }}
+                        />
+                      </div>
+
+                      {/* Floating indicator */}
+                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-slate-400 to-slate-500 rounded-full animate-pulse opacity-80"></div>
+                    </div>
                   );
                 }
 

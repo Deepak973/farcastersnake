@@ -326,7 +326,7 @@ body::before {
   padding-left: 10px; /* keep 10px spacing on both sides */
   padding-right: 10px;
   max-width: calc(100% - 20px); /* ensure it respects screen size */
-  box-sizing: border-box; /* so padding doesn’t add extra width */
+  box-sizing: border-box; /* so padding doesn't add extra width */
 }
 
 .fullscreen .game-board-container {
@@ -375,12 +375,46 @@ body::before {
   opacity: 0.6;
 }
 
+/* Smooth Snake Movement */
 .board-grid {
   display: grid;
   position: relative;
   z-index: 1;
 }
 
+/* Smooth head movement */
+.cell:has(.relative.group) {
+  transition: all 0.05s ease-out;
+}
+
+/* Smooth body movement */
+.snake-body {
+  transition: all 0.1s ease-out;
+}
+
+/* Enhanced hover effects with smooth transitions */
+.cell:hover {
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+  transform: scale(1.05);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Smooth content transitions */
+.cell .relative {
+  transition: all 0.1s ease-out;
+}
+
+.cell .relative img {
+  transition: all 0.1s ease-out;
+}
+
+.cell:hover .relative img {
+  transform: scale(1.1);
+  transition: all 0.2s ease-out;
+}
+
+/* Enhanced Cell Content Styling */
 .cell {
   width: 40px;
   height: 40px;
@@ -391,19 +425,55 @@ body::before {
   justify-content: center;
   transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+  overflow: hidden;
 }
 
-.cell:hover {
-  border-color: var(--neon-cyan);
-  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+/* Enhanced Food Images */
+.cell .relative {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.cell-icon {
-  width: 32px;
-  height: 32px;
-  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+.cell .relative img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 4px;
+  transition: all 0.2s ease;
 }
 
+.cell:hover .relative img {
+  transform: scale(1.1);
+}
+
+/* Glowing Background Effects */
+.cell .absolute.inset-0 {
+  transition: all 0.3s ease;
+}
+
+.cell:hover .absolute.inset-0 {
+  opacity: 0.8;
+  transform: scale(1.15);
+}
+
+/* Floating Indicators */
+.cell .absolute.-top-1.-right-1,
+.cell .absolute.-top-2.-right-2,
+.cell .absolute.-top-0\.5.-right-0\.5 {
+  transition: all 0.3s ease;
+}
+
+.cell:hover .absolute.-top-1.-right-1,
+.cell:hover .absolute.-top-2.-right-2,
+.cell:hover .absolute.-top-0\.5.-right-0\.5 {
+  transform: scale(1.2);
+  opacity: 1;
+}
+
+/* Snake Body Enhancement */
 .snake-body {
   background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
   box-shadow: 0 0 15px var(--shadow-glow),
@@ -411,6 +481,45 @@ body::before {
   border-radius: 4px;
   position: relative;
   overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.snake-body:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px var(--shadow-glow),
+    inset 0 0 15px rgba(255, 255, 255, 0.3);
+}
+
+/* Crown Animation for Head */
+@keyframes crownGlow {
+  0%,
+  100% {
+    box-shadow: 0 0 5px rgba(255, 193, 7, 0.8);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(255, 193, 7, 1), 0 0 25px rgba(255, 193, 7, 0.6);
+  }
+}
+
+.cell .absolute.-top-2.-right-2 {
+  animation: crownGlow 2s ease-in-out infinite;
+}
+
+/* Food Pulse Animation */
+@keyframes foodPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+.cell .absolute.inset-0.animate-pulse {
+  animation: foodPulse 2s ease-in-out infinite;
 }
 
 .snake-body::before {
