@@ -11,6 +11,7 @@ import Sidebar from "../Sidebar";
 import { LeaderboardComponent } from "./LeaderboardComponent";
 import { RulesComponent } from "./RulesComponent";
 import { ChallengesComponent } from "./ChallengesComponent";
+import { FirstTimeRulesPopup } from "./FirstTimeRulesPopup";
 
 const BOARD_SIZE = 12;
 const INITIAL_SNAKE = [
@@ -98,6 +99,41 @@ const SnakeGame: React.FC<SnakeGameProps> = ({
   const { context } = useMiniApp();
   const { showToast } = useToast();
   const [_isMuted, _setIsMuted] = useState(false);
+  const [showFirstTimeRules, setShowFirstTimeRules] = useState(false);
+
+  // Check if user has seen rules before
+  useEffect(() => {
+    const rulesData = localStorage.getItem("farcasterSnake_rulesSeen");
+    if (rulesData) {
+      try {
+        const { timestamp } = JSON.parse(rulesData);
+        const oneHourAgo = Date.now() - 60 * 60 * 1000; // 1 hour in milliseconds
+
+        if (timestamp > oneHourAgo) {
+          // Rules seen within the last hour, don't show popup
+          return;
+        } else {
+          // Rules seen more than 1 hour ago, remove old data
+          localStorage.removeItem("farcasterSnake_rulesSeen");
+        }
+      } catch (_error) {
+        // Invalid data, remove it
+        localStorage.removeItem("farcasterSnake_rulesSeen");
+      }
+    }
+
+    // Show popup if no valid data or expired
+    setShowFirstTimeRules(true);
+  }, []);
+
+  const closeFirstTimeRules = () => {
+    setShowFirstTimeRules(false);
+    // Store timestamp with the rules seen flag
+    const rulesData = {
+      timestamp: Date.now(),
+    };
+    localStorage.setItem("farcasterSnake_rulesSeen", JSON.stringify(rulesData));
+  };
 
   // Header Component
   const GameHeader = ({
@@ -567,6 +603,11 @@ const SnakeGame: React.FC<SnakeGameProps> = ({
 
   return (
     <>
+      {/* First Time Rules Popup */}
+      {showFirstTimeRules && (
+        <FirstTimeRulesPopup onClose={closeFirstTimeRules} />
+      )}
+
       {/* Main Game Container */}
       <div className={`game-container ${gameStarted ? "fullscreen" : ""}`}>
         {/* Show Header + Sidebar when game is NOT started */}
