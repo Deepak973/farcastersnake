@@ -366,20 +366,6 @@ export const ChallengesComponent: React.FC<ChallengesComponentProps> = ({
               )}
             </div>
           </div>
-
-          <div className="text-center mt-12">
-            <button
-              onClick={onClose}
-              className="group inline-block bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-8 py-4 rounded-2xl font-bold hover:from-cyan-600 hover:to-purple-700 transition-all duration-300 font-['Orbitron'] tracking-wide uppercase text-lg relative overflow-hidden"
-              style={{
-                boxShadow: "0 0 30px rgba(0, 255, 255, 0.4)",
-                textShadow: "0 0 15px rgba(255, 255, 255, 0.5)",
-              }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-              <span className="relative z-10">🎮 Back to Game</span>
-            </button>
-          </div>
         </div>
       </div>
     </div>

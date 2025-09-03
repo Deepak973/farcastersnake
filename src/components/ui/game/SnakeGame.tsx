@@ -370,8 +370,11 @@ const SnakeGame: React.FC<SnakeGameProps> = ({
           // Show eaten message and track eaten follower
           if (followers.length > 0) {
             const eatenFollower = followers[currentFollowerIndex];
+            const creativeMessage = getCreativeEatenMessage(
+              eatenFollower.displayName || eatenFollower.username
+            );
             setEatenMessage({
-              name: eatenFollower.displayName || eatenFollower.username,
+              name: creativeMessage,
               image: eatenFollower.pfpUrl,
             });
 
@@ -533,6 +536,23 @@ const SnakeGame: React.FC<SnakeGameProps> = ({
     return followers[currentFollowerIndex];
   };
 
+  // Generate creative eaten messages
+  const getCreativeEatenMessage = (name: string) => {
+    const messages = [
+      `Burp! ${name}`,
+      `Nom nom ${name}!`,
+      `Gulp! ${name} gone!`,
+      `Chomp! ${name} digested!`,
+      `Slurp! ${name} absorbed!`,
+      `Munch! ${name} consumed!`,
+      `Crunch! ${name} devoured!`,
+      `Gobble! ${name} eaten!`,
+      `Swallow! ${name} gone!`,
+      `Feast! ${name} absorbed!`,
+    ];
+    return messages[Math.floor(Math.random() * messages.length)];
+  };
+
   // Generate share text with eaten followers
   const generateShareText = () => {
     let shareText = `I just scored ${score} in Farcaster Snake!`;
@@ -545,16 +565,18 @@ const SnakeGame: React.FC<SnakeGameProps> = ({
 
       if (uniqueFollowers.length === 1) {
         const follower = uniqueFollowers[0];
-        shareText += ` I ate @${follower.username}!`;
+        shareText += ` ${getCreativeEatenMessage(follower.username)}!`;
       } else if (uniqueFollowers.length <= 3) {
         const names = uniqueFollowers.map((f) => `@${f.username}`).join(", ");
-        shareText += ` I ate ${names}!`;
+        shareText += ` I feasted on ${names}!`;
       } else {
         const names = uniqueFollowers
           .slice(0, 3)
           .map((f) => `@${f.username}`)
           .join(", ");
-        shareText += ` I ate ${names} and ${uniqueFollowers.length - 3} more!`;
+        shareText += ` I devoured ${names} and ${
+          uniqueFollowers.length - 3
+        } more!`;
       }
     }
 
@@ -608,305 +630,438 @@ const SnakeGame: React.FC<SnakeGameProps> = ({
         <FirstTimeRulesPopup onClose={closeFirstTimeRules} />
       )}
 
-      {/* Main Game Container */}
-      <div className={`game-container ${gameStarted ? "fullscreen" : ""}`}>
-        {/* Show Header + Sidebar when game is NOT started */}
-        {!gameStarted && (
-          <>
-            <Sidebar
-              isOpen={showSidebar}
-              onClose={() => setShowSidebar(false)}
-              onAction={handleSidebarAction}
-            />
+      {/* Main Menu Screen - NOT in popup */}
+      {!gameStarted && (
+        <>
+          <Sidebar
+            isOpen={showSidebar}
+            onClose={() => setShowSidebar(false)}
+            onAction={handleSidebarAction}
+          />
 
-            {/* Header for main menu */}
-            <GameHeader title="" />
+          {/* Header for main menu */}
+          <GameHeader title="" />
 
-            {/* Start Game Button - NOT in popup */}
-            <div className="flex flex-col items-center justify-center min-h-[100vh]">
-              <img
-                src="/logo.png"
-                alt="Farcaster"
-                className="w-60 h-60 rounded-2xl border-4 border-cyan-400 shadow-lg relative"
-                style={{
-                  boxShadow:
-                    "0 0 30px rgba(0, 255, 255, 0.6), 0 0 60px rgba(138, 43, 226, 0.5)",
-                  animation: "shineGlow 3s infinite alternate",
-                }}
-              />
+          {/* Enhanced Main Menu */}
+          <div className="pt-32 flex flex-col items-center justify-center min-h-screen relative overflow-hidden px-6">
+            {/* Background Effects */}
+            <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-black"></div>
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(0,255,255,0.1)_0%,transparent_50%),radial-gradient(circle_at_80%_20%,rgba(138,43,226,0.1)_0%,transparent_50%)]"></div>
 
-              <button
-                onClick={handleStartGame}
-                className="group bg-gradient-to-r from-cyan-500 to-purple-600 text-white py-6 px-12 rounded-2xl font-bold text-2xl hover:from-cyan-600 hover:to-purple-700 transition-all duration-300 font-['Orbitron'] tracking-wide uppercase relative overflow-hidden transform hover:scale-105"
-                style={{
-                  boxShadow: "0 0 30px rgba(0, 255, 255, 0.5)",
-                  textShadow: "0 0 15px rgba(255, 255, 255, 0.5)",
-                }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-                <span className="relative z-10">START GAME</span>
-              </button>
-            </div>
-          </>
-        )}
-
-        {/* Game Over Screen - Show Header + Sidebar + WASTED + Game Over Content (NOT in popup) */}
-        {gameOver && (
-          <>
-            {/* Header for game over */}
-            <GameHeader title="GAME OVER" />
-
-            <Sidebar
-              isOpen={showSidebar}
-              onClose={() => setShowSidebar(false)}
-              onAction={handleSidebarAction}
-            />
-
-            {/* WASTED Text */}
-            <div className="text-center mt-32 mb-8">
-              <h1
-                className="text-red-400 text-6xl font-bold font-['Orbitron'] tracking-wider uppercase"
-                style={{ textShadow: "0 0 25px rgba(239, 68, 68, 0.7)" }}
-              >
-                💀 WASTED!
-              </h1>
+            {/* Floating Particles */}
+            <div className="absolute inset-0 overflow-hidden">
+              {[...Array(20)].map((_, i) => (
+                <div
+                  key={i}
+                  className="absolute w-2 h-2 bg-cyan-400 rounded-full opacity-30 animate-pulse"
+                  style={{
+                    left: `${Math.random() * 100}%`,
+                    top: `${Math.random() * 100}%`,
+                    animationDelay: `${Math.random() * 3}s`,
+                    animationDuration: `${2 + Math.random() * 2}s`,
+                  }}
+                />
+              ))}
             </div>
 
-            {/* Game Over Content - NOT in popup */}
-            <div className="max-w-2xl mx-auto px-6">
-              <div className="text-center mb-8">
-                <p className="text-cyan-200 text-xl mb-3 font-['Rajdhani']">
-                  Final Score:{" "}
-                  <span
-                    className="text-cyan-400 font-bold font-['Orbitron'] tracking-wide"
-                    style={{ textShadow: "0 0 15px rgba(0, 255, 255, 0.6)" }}
-                  >
-                    {score}
-                  </span>
+            {/* Main Content Container */}
+            <div className="relative z-10 text-center max-w-4xl mx-auto">
+              {/* Game Logo & Title */}
+              <div className="mb-12">
+                <div className="relative mb-8">
+                  {/* Glowing Background Circle */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-purple-600/20 rounded-full blur-3xl scale-150 animate-pulse"></div>
+
+                  {/* Logo Container */}
+                  <div className="relative flex justify-center">
+                    <img
+                      src="/logo.png"
+                      alt="Farcaster Snake"
+                      className="w-48 h-48 md:w-64 md:h-64 rounded-3xl border-4 border-cyan-400/50 shadow-2xl relative z-10 transition-all duration-500 hover:scale-110 hover:border-cyan-400"
+                      style={{
+                        boxShadow:
+                          "0 0 40px rgba(0, 255, 255, 0.6), 0 0 80px rgba(138, 43, 226, 0.4)",
+                        filter: "drop-shadow(0 0 20px rgba(0, 255, 255, 0.8))",
+                      }}
+                    />
+
+                    {/* Floating Elements Around Logo */}
+                    <div
+                      className="absolute -top-4 -left-4 w-8 h-8 bg-gradient-to-r from-cyan-400 to-purple-500 rounded-full animate-bounce"
+                      style={{ animationDelay: "0.5s" }}
+                    ></div>
+                    <div
+                      className="absolute -top-4 -right-4 w-6 h-6 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full animate-bounce"
+                      style={{ animationDelay: "1s" }}
+                    ></div>
+                    <div
+                      className="absolute -bottom-4 -left-4 w-6 h-6 bg-gradient-to-r from-pink-400 to-cyan-500 rounded-full animate-bounce"
+                      style={{ animationDelay: "1.5s" }}
+                    ></div>
+                    <div
+                      className="absolute -bottom-4 -right-4 w-8 h-8 bg-gradient-to-r from-cyan-400 to-purple-500 rounded-full animate-bounce"
+                      style={{ animationDelay: "2s" }}
+                    ></div>
+                  </div>
+                </div>
+
+                {/* Game Title */}
+                <h1
+                  className="text-4xl md:text-6xl font-extrabold font-['Orbitron'] tracking-wider uppercase mb-4 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 relative z-10"
+                  style={{ textShadow: "0 0 30px rgba(0, 255, 255, 0.8)" }}
+                >
+                  Farcaster Snake
+                </h1>
+
+                {/* Subtitle */}
+                <p
+                  className="text-lg md:text-xl text-cyan-200 font-['Rajdhani'] mb-8 max-w-2xl mx-auto leading-relaxed"
+                  style={{ textShadow: "0 0 15px rgba(0, 255, 255, 0.5)" }}
+                >
+                  Eat your followers, stay hydrated, and don&apos;t forget to
+                  poop! The most chaotic snake game on Farcaster.
                 </p>
-                {previousBestScore !== null && (
-                  <div className="text-sm text-cyan-300 mb-3 font-['Rajdhani']">
-                    Previous Best: {previousBestScore}
-                  </div>
-                )}
-                {previousBestScore !== null && score > previousBestScore && (
-                  <div
-                    className="text-green-400 font-bold text-lg mb-3 font-['Rajdhani'] animate-pulse"
-                    style={{ textShadow: "0 0 15px rgba(34, 197, 94, 0.6)" }}
-                  >
-                    🎉 New Personal Best!
-                  </div>
-                )}
-                {previousBestScore !== null && score <= previousBestScore && (
-                  <div className="text-cyan-300 text-sm mb-3 font-['Rajdhani']">
-                    {score === previousBestScore
-                      ? "🏆 Tied your best score!"
-                      : "Keep trying to beat your best!"}
-                  </div>
-                )}
               </div>
 
-              <div className="space-y-4 mb-6">
-                {!scoreSubmitted &&
-                  (previousBestScore === null || score > previousBestScore) && (
-                    <button
-                      className="group w-full bg-gradient-to-r from-cyan-500 to-purple-600 text-white py-4 px-6 rounded-2xl font-bold hover:from-cyan-600 hover:to-purple-700 transition-all duration-300 font-['Orbitron'] tracking-wide uppercase relative overflow-hidden transform hover:scale-105"
-                      onClick={async () => {
-                        await submitScore(address as string, score);
-                      }}
-                      disabled={scoreSubmitting}
-                      style={{
-                        boxShadow: "0 0 25px rgba(0, 255, 255, 0.4)",
-                        textShadow: "0 0 10px rgba(255, 255, 255, 0.5)",
-                      }}
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-                      <span className="relative z-10">
-                        {scoreSubmitting ? "Submitting..." : "Submit Score"}
-                      </span>
-                    </button>
-                  )}
+              {/* Game Stats Preview */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 max-w-3xl mx-auto">
+                <div
+                  className="bg-gradient-to-br from-cyan-900/30 to-cyan-800/30 rounded-2xl p-6 border border-cyan-400/50 backdrop-blur-sm hover:scale-105 transition-all duration-300"
+                  style={{ boxShadow: "0 0 25px rgba(0, 255, 255, 0.2)" }}
+                >
+                  <div className="text-3xl mb-2">👤</div>
+                  <div className="text-cyan-300 font-bold font-['Orbitron'] text-lg mb-1">
+                    EAT
+                  </div>
+                  <div className="text-cyan-200 text-sm font-['Rajdhani']">
+                    Followers give you +2 points each
+                  </div>
+                </div>
+
+                <div
+                  className="bg-gradient-to-br from-blue-900/30 to-blue-800/30 rounded-2xl p-6 border border-blue-400/50 backdrop-blur-sm hover:scale-105 transition-all duration-300"
+                  style={{ boxShadow: "0 0 25px rgba(59, 130, 246, 0.2)" }}
+                >
+                  <div className="text-3xl mb-2">💧</div>
+                  <div className="text-blue-300 font-bold font-['Orbitron'] text-lg mb-1">
+                    DRINK
+                  </div>
+                  <div className="text-blue-200 text-sm font-['Rajdhani']">
+                    Water every 2 bites or die!
+                  </div>
+                </div>
+
+                <div
+                  className="bg-gradient-to-br from-purple-900/30 to-purple-800/30 rounded-2xl p-6 border border-purple-400/50 backdrop-blur-sm hover:scale-105 transition-all duration-300"
+                  style={{ boxShadow: "0 0 25px rgba(138, 43, 226, 0.2)" }}
+                >
+                  <div className="text-3xl mb-2">🚽</div>
+                  <div className="text-purple-300 font-bold font-['Rajdhani'] text-lg mb-1">
+                    POOP
+                  </div>
+                  <div className="text-purple-200 text-sm font-['Rajdhani']">
+                    Bathroom every 5 bites!
+                  </div>
+                </div>
+              </div>
+
+              {/* Start Game Button */}
+              <div className="relative">
+                {/* Button Glow Effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-3xl blur-xl opacity-75 scale-110 animate-pulse"></div>
+
                 <button
-                  className="group w-full bg-gradient-to-r from-slate-600 to-slate-700 text-white py-4 px-6 rounded-2xl font-bold hover:from-slate-700 hover:to-slate-800 transition-all duration-300 font-['Orbitron'] tracking-wide uppercase relative overflow-hidden transform hover:scale-105"
-                  onClick={handleRestart}
+                  onClick={handleStartGame}
+                  className="group relative bg-gradient-to-r from-cyan-500 to-purple-600 text-white py-6 px-16 rounded-3xl font-bold text-2xl md:text-3xl hover:from-cyan-400 hover:to-purple-500 transition-all duration-500 font-['Orbitron'] tracking-wide uppercase transform hover:scale-110 hover:shadow-2xl relative z-10 border-2 border-cyan-300/50 overflow-hidden"
                   style={{
-                    boxShadow: "0 0 25px rgba(148, 163, 184, 0.4)",
-                    textShadow: "0 0 10px rgba(255, 255, 255, 0.5)",
+                    boxShadow:
+                      "0 0 40px rgba(0, 255, 255, 0.6), 0 0 80px rgba(138, 43, 226, 0.4)",
+                    textShadow: "0 0 20px rgba(255, 255, 255, 0.8)",
                   }}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-                  <span className="relative z-10">Play Again</span>
+                  {/* Shine Effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+
+                  {/* Button Content */}
+                  <div className="flex items-center justify-center gap-4 relative z-10">
+                    <span>START GAME</span>
+                  </div>
                 </button>
               </div>
 
-              {scoreSubmitted && (
-                <div className="text-center mb-6">
-                  <div
-                    className="text-green-400 font-bold mb-3 font-['Rajdhani'] text-lg"
-                    style={{ textShadow: "0 0 15px rgba(34, 197, 94, 0.6)" }}
-                  >
-                    {previousBestScore !== null && score > previousBestScore
-                      ? "🎉 New personal best submitted to leaderboard!"
-                      : "✅ Score processed!"}
-                  </div>
-                </div>
-              )}
-
-              <div className="mb-6">
-                <ShareButton
-                  buttonText="Share Score"
-                  cast={{
-                    text: generateShareText(),
-                    bestFriends: false,
-                    embeds: [`${APP_URL}/share/${context?.user?.fid || ""}`],
-                  }}
-                  className="group w-full bg-gradient-to-r from-cyan-500 to-purple-600 text-white py-4 px-6 rounded-2xl font-bold hover:from-cyan-600 hover:to-purple-700 transition-all duration-300 font-['Orbitron'] tracking-wide uppercase relative overflow-hidden transform hover:scale-105"
-                />
+              {/* Footer Info */}
+              <div className="mt-12 text-center">
+                <p className="text-cyan-300/70 text-sm font-['Rajdhani'] mb-2">
+                  Use arrow keys or touch controls to play
+                </p>
+                <p className="text-cyan-200/50 text-xs font-['Rajdhani']">
+                  Challenge your friends and climb the leaderboard!
+                </p>
               </div>
-            </div>
-          </>
-        )}
-
-        {/* Game UI - Only show during active gameplay (no header/sidebar) */}
-        {gameStarted && !gameOver && (
-          <div className="absolute top-4 left-0 w-full px-6">
-            {/* Top row: Best (left) + Score (center) */}
-            <div className="flex items-center justify-between relative">
-              <div
-                className="text-cyan-300 font-bold font-['Rajdhani'] text-lg"
-                style={{ textShadow: "0 0 10px rgba(0, 255, 255, 0.5)" }}
-              >
-                Best: {previousBestScore}
-              </div>
-              <div
-                className="absolute left-1/2 transform -translate-x-1/2 text-cyan-300 font-bold font-['Rajdhani'] text-lg"
-                style={{ textShadow: "0 0 10px rgba(0, 255, 255, 0.5)" }}
-              >
-                Score: {score}
-              </div>
-            </div>
-
-            {/* Alerts (below Best on left) */}
-            <div className="absolute top-10 left-0 w-fill px-6">
-              {bitesSinceWater === 2 && <div className="alert">DRINK</div>}
-              {bitesSincePoop === 5 && <div className="alert">POOP</div>}
-              {bitesSincePoop !== 5 && bitesSinceWater !== 2 && (
-                <div className="alert">EAT</div>
-              )}
             </div>
           </div>
-        )}
+        </>
+      )}
 
-        {/* Game Board - Only show during active gameplay */}
-        {gameStarted && !gameOver && (
-          <div className="game-board-container">
-            {/* Eaten Message */}
-            {eatenMessage && (
-              <div className="eaten-message">
-                <div className="eaten-content">
-                  <img
-                    src={eatenMessage.image}
-                    alt={eatenMessage.name}
-                    className="eaten-avatar"
-                  />
-                  <span className="eaten-text">
-                    You ate {eatenMessage.name}!
-                  </span>
+      {/* Game Over Screen - Show Header + Sidebar + WASTED + Game Over Content (NOT in popup) */}
+      {gameOver && (
+        <>
+          {/* Header for game over */}
+          <GameHeader title="GAME OVER" />
+
+          <Sidebar
+            isOpen={showSidebar}
+            onClose={() => setShowSidebar(false)}
+            onAction={handleSidebarAction}
+          />
+
+          {/* WASTED Text */}
+          <div className="text-center mt-32 mb-8">
+            <h1
+              className="text-red-400 text-6xl font-bold font-['Orbitron'] tracking-wider uppercase"
+              style={{ textShadow: "0 0 25px rgba(239, 68, 68, 0.7)" }}
+            >
+              💀 WASTED!
+            </h1>
+          </div>
+
+          {/* Game Over Content - NOT in popup */}
+          <div className="max-w-2xl mx-auto px-6">
+            <div className="text-center mb-8">
+              <p className="text-cyan-200 text-xl mb-3 font-['Rajdhani']">
+                Final Score:{" "}
+                <span
+                  className="text-cyan-400 font-bold font-['Orbitron'] tracking-wide"
+                  style={{ textShadow: "0 0 15px rgba(0, 255, 255, 0.6)" }}
+                >
+                  {score}
+                </span>
+              </p>
+              {previousBestScore !== null && (
+                <div className="text-sm text-cyan-300 mb-3 font-['Rajdhani']">
+                  Previous Best: {previousBestScore}
+                </div>
+              )}
+              {previousBestScore !== null && score > previousBestScore && (
+                <div
+                  className="text-green-400 font-bold text-lg mb-3 font-['Rajdhani'] animate-pulse"
+                  style={{ textShadow: "0 0 15px rgba(34, 197, 94, 0.6)" }}
+                >
+                  🎉 New Personal Best!
+                </div>
+              )}
+              {previousBestScore !== null && score <= previousBestScore && (
+                <div className="text-cyan-300 text-sm mb-3 font-['Rajdhani']">
+                  {score === previousBestScore
+                    ? "🏆 Tied your best score!"
+                    : "Keep trying to beat your best!"}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-4 mb-6">
+              {!scoreSubmitted &&
+                (previousBestScore === null || score > previousBestScore) && (
+                  <button
+                    className="group w-full bg-gradient-to-r from-cyan-500 to-purple-600 text-white py-4 px-6 rounded-2xl font-bold hover:from-cyan-600 hover:to-purple-700 transition-all duration-300 font-['Orbitron'] tracking-wide uppercase relative overflow-hidden transform hover:scale-105"
+                    onClick={async () => {
+                      await submitScore(address as string, score);
+                    }}
+                    disabled={scoreSubmitting}
+                    style={{
+                      boxShadow: "0 0 25px rgba(0, 255, 255, 0.4)",
+                      textShadow: "0 0 10px rgba(255, 255, 255, 0.5)",
+                    }}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                    <span className="relative z-10">
+                      {scoreSubmitting ? "Submitting..." : "Submit Score"}
+                    </span>
+                  </button>
+                )}
+              <button
+                className="group w-full bg-gradient-to-r from-slate-600 to-slate-700 text-white py-4 px-6 rounded-2xl font-bold hover:from-slate-700 hover:to-slate-800 transition-all duration-300 font-['Orbitron'] tracking-wide uppercase relative overflow-hidden transform hover:scale-105"
+                onClick={handleRestart}
+                style={{
+                  boxShadow: "0 0 25px rgba(148, 163, 184, 0.4)",
+                  textShadow: "0 0 10px rgba(255, 255, 255, 0.5)",
+                }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                <span className="relative z-10">Play Again</span>
+              </button>
+            </div>
+
+            {scoreSubmitted && (
+              <div className="text-center mb-6">
+                <div
+                  className="text-green-400 font-bold mb-3 font-['Rajdhani'] text-lg"
+                  style={{ textShadow: "0 0 15px rgba(34, 197, 94, 0.6)" }}
+                >
+                  {previousBestScore !== null && score > previousBestScore
+                    ? "🎉 New personal best submitted to leaderboard!"
+                    : "✅ Score processed!"}
                 </div>
               </div>
             )}
 
-            <div className="game-board">
-              <div
-                className="board-grid"
-                style={{
-                  gridTemplateRows: `repeat(${BOARD_SIZE}, 40px)`,
-                  gridTemplateColumns: `repeat(${BOARD_SIZE}, 40px)`,
+            <div className="mb-6">
+              <ShareButton
+                buttonText="Share Score"
+                cast={{
+                  text: generateShareText(),
+                  bestFriends: false,
+                  embeds: [`${APP_URL}/share/${context?.user?.fid || ""}`],
                 }}
-              >
-                {[...Array(BOARD_SIZE * BOARD_SIZE)].map((_, i) => {
-                  const x = i % BOARD_SIZE;
-                  const y = Math.floor(i / BOARD_SIZE);
-                  const isHead = snake[0].x === x && snake[0].y === y;
-                  const isBody = snake
-                    .slice(1)
-                    .some((cell) => cell.x === x && cell.y === y);
-                  const isFood = foods.some(
-                    (cell) => cell.x === x && cell.y === y
+                className="group w-full bg-gradient-to-r from-cyan-500 to-purple-600 text-white py-4 px-6 rounded-2xl font-bold hover:from-cyan-600 hover:to-purple-700 transition-all duration-300 font-['Orbitron'] tracking-wide uppercase relative overflow-hidden transform hover:scale-105"
+              />
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Game UI - Only show during active gameplay (no header/sidebar) */}
+      {gameStarted && !gameOver && (
+        <div className="absolute top-4 left-0 w-full px-6">
+          {/* Top row: Best (left) + Score (center) */}
+          <div className="flex items-center justify-between relative">
+            <div
+              className="text-cyan-300 font-bold font-['Rajdhani'] text-lg"
+              style={{ textShadow: "0 0 10px rgba(0, 255, 255, 0.5)" }}
+            >
+              Best: {previousBestScore}
+            </div>
+            <div
+              className="absolute left-1/2 transform -translate-x-1/2 text-cyan-300 font-bold font-['Rajdhani'] text-lg"
+              style={{ textShadow: "0 0 10px rgba(0, 255, 255, 0.5)" }}
+            >
+              Score: {score}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Game Board - Only show during active gameplay */}
+      {gameStarted && !gameOver && (
+        <div className="game-board-container">
+          {/* Eaten Message */}
+          {eatenMessage && (
+            <div className="eaten-message">
+              <div className="eaten-content">
+                <img
+                  src={eatenMessage.image}
+                  alt={eatenMessage.name}
+                  className="eaten-avatar"
+                />
+                <span className="eaten-text">{eatenMessage.name}</span>
+              </div>
+            </div>
+          )}
+
+          <div className="game-board">
+            <div
+              className="board-grid"
+              style={{
+                gridTemplateRows: `repeat(${BOARD_SIZE}, 40px)`,
+                gridTemplateColumns: `repeat(${BOARD_SIZE}, 40px)`,
+              }}
+            >
+              {[...Array(BOARD_SIZE * BOARD_SIZE)].map((_, i) => {
+                const x = i % BOARD_SIZE;
+                const y = Math.floor(i / BOARD_SIZE);
+                const isHead = snake[0].x === x && snake[0].y === y;
+                const isBody = snake
+                  .slice(1)
+                  .some((cell) => cell.x === x && cell.y === y);
+                const isFood = foods.some(
+                  (cell) => cell.x === x && cell.y === y
+                );
+                const isWater = water && water.x === x && water.y === y;
+                const isCommode = commode && commode.x === x && commode.y === y;
+
+                let cellClass = "cell";
+                let content: React.ReactNode = "";
+
+                if (isHead) {
+                  content = (
+                    <img
+                      src={context?.user?.pfpUrl || "/farcaster.webp"}
+                      alt="Head"
+                      className="cell-icon"
+                    />
                   );
-                  const isWater = water && water.x === x && water.y === y;
-                  const isCommode =
-                    commode && commode.x === x && commode.y === y;
+                } else if (isBody) {
+                  cellClass += " snake-body";
+                }
 
-                  let cellClass = "cell";
-                  let content: React.ReactNode = "";
-
-                  if (isHead) {
+                if (isFood) {
+                  const currentFollower = getCurrentFollower();
+                  if (currentFollower && currentFollower.pfpUrl) {
                     content = (
                       <img
-                        src={context?.user?.pfpUrl || "/farcaster.webp"}
-                        alt="Head"
+                        src={currentFollower.pfpUrl}
+                        alt={`${
+                          currentFollower.displayName ||
+                          currentFollower.username
+                        }`}
                         className="cell-icon"
                       />
                     );
-                  } else if (isBody) {
-                    cellClass += " snake-body";
-                  }
-
-                  if (isFood) {
-                    const currentFollower = getCurrentFollower();
-                    if (currentFollower && currentFollower.pfpUrl) {
-                      content = (
-                        <img
-                          src={currentFollower.pfpUrl}
-                          alt={`${
-                            currentFollower.displayName ||
-                            currentFollower.username
-                          }`}
-                          className="cell-icon"
-                        />
-                      );
-                    } else {
-                      // Fallback to default food icon
-                      content = (
-                        <div className="w-6 h-6 bg-deep-pink rounded-full flex items-center justify-center text-white text-xs">
-                          👤
-                        </div>
-                      );
-                    }
-                  } else if (isWater) {
+                  } else {
+                    // Fallback to default food icon
                     content = (
-                      <span className="emoji">
-                        <img src="/drop.png" alt="Water" className="w-6 h-6" />
-                      </span>
-                    );
-                  } else if (isCommode) {
-                    content = (
-                      <span className="emoji">
-                        <img
-                          src="/comode.png"
-                          alt="Commode"
-                          className="w-6 h-6"
-                        />
-                      </span>
+                      <div className="w-6 h-6 bg-deep-pink rounded-full flex items-center justify-center text-white text-xs">
+                        👤
+                      </div>
                     );
                   }
-
-                  return (
-                    <div key={i} className={cellClass}>
-                      {content}
-                    </div>
+                } else if (isWater) {
+                  content = (
+                    <span className="emoji">
+                      <img src="/drop.png" alt="Water" className="w-6 h-6" />
+                    </span>
                   );
-                })}
-              </div>
+                } else if (isCommode) {
+                  content = (
+                    <span className="emoji">
+                      <img
+                        src="/comode.png"
+                        alt="Commode"
+                        className="w-6 h-6"
+                      />
+                    </span>
+                  );
+                }
+
+                return (
+                  <div key={i} className={cellClass}>
+                    {content}
+                  </div>
+                );
+              })}
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Touch Controls - Only show during active gameplay */}
-        {gameStarted && !gameOver && (
-          <div className="touch-controls">
-            <button onClick={() => setDirection({ x: 0, y: -1 })}>
+      {/* Touch Controls - Only show during active gameplay */}
+      {gameStarted && !gameOver && (
+        <div className="touch-controls">
+          <button onClick={() => setDirection({ x: 0, y: -1 })}>
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M12 4L20 12L12 20L4 12L12 4Z" fill="currentColor" />
+              <path d="M12 8L16 12L12 16L8 12L12 8Z" fill="white" />
+            </svg>
+          </button>
+
+          <div className="flex items-center justify-center space-x-10">
+            <button onClick={() => setDirection({ x: -1, y: 0 })}>
               <svg
                 width="24"
                 height="24"
@@ -915,38 +1070,10 @@ const SnakeGame: React.FC<SnakeGameProps> = ({
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path d="M12 4L20 12L12 20L4 12L12 4Z" fill="currentColor" />
-                <path d="M12 8L16 12L12 16L8 12L12 8Z" fill="white" />
+                <path d="M8 12L12 8L16 12L12 16L8 12Z" fill="white" />
               </svg>
             </button>
-
-            <div className="flex items-center justify-center space-x-10">
-              <button onClick={() => setDirection({ x: -1, y: 0 })}>
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path d="M12 4L20 12L12 20L4 12L12 4Z" fill="currentColor" />
-                  <path d="M8 12L12 8L16 12L12 16L8 12Z" fill="white" />
-                </svg>
-              </button>
-              <button onClick={() => setDirection({ x: 1, y: 0 })}>
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path d="M12 4L20 12L12 20L4 12L12 4Z" fill="currentColor" />
-                  <path d="M16 12L12 8L8 12L12 16L8 12Z" fill="white" />
-                </svg>
-              </button>
-            </div>
-
-            <button onClick={() => setDirection({ x: 0, y: 1 })}>
+            <button onClick={() => setDirection({ x: 1, y: 0 })}>
               <svg
                 width="24"
                 height="24"
@@ -955,12 +1082,25 @@ const SnakeGame: React.FC<SnakeGameProps> = ({
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path d="M12 4L20 12L12 20L4 12L12 4Z" fill="currentColor" />
-                <path d="M8 12L12 16L16 12L12 8L8 12Z" fill="white" />
+                <path d="M16 12L12 8L8 12L12 16L8 12Z" fill="white" />
               </svg>
             </button>
           </div>
-        )}
-      </div>
+
+          <button onClick={() => setDirection({ x: 0, y: 1 })}>
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M12 4L20 12L12 20L4 12L12 4Z" fill="currentColor" />
+              <path d="M8 12L12 16L16 12L12 8L8 12Z" fill="white" />
+            </svg>
+          </button>
+        </div>
+      )}
     </>
   );
 };
