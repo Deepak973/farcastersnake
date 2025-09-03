@@ -80,7 +80,6 @@ const SnakeGame: React.FC<SnakeGameProps> = ({
   const [bitesSincePoop, setBitesSincePoop] = useState(0);
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
   const [scoreSubmitting, setScoreSubmitting] = useState(false);
-  const [showInfoModal, setShowInfoModal] = useState(true);
   const [showSidebar, setShowSidebar] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
   const [activeComponent, setActiveComponent] = useState<string | null>(null);
@@ -99,6 +98,75 @@ const SnakeGame: React.FC<SnakeGameProps> = ({
   const { context } = useMiniApp();
   const { showToast } = useToast();
   const [_isMuted, _setIsMuted] = useState(false);
+
+  // Header Component
+  const GameHeader = ({
+    title,
+    showSidebarButton = true,
+  }: {
+    title: string;
+    showSidebarButton?: boolean;
+  }) => (
+    <div className="absolute top-0 left-0 right-0 z-20">
+      <div className="bg-gradient-to-r from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-md border-b-2 border-cyan-400/50 shadow-2xl">
+        <div className="flex items-center justify-between px-6 py-4">
+          {/* Page Title */}
+          <div className="flex items-center gap-3">
+            <h1
+              className="text-2xl font-extrabold font-['Orbitron'] tracking-wider uppercase text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-cyan-400"
+              style={{ textShadow: "0 0 20px rgba(0, 255, 255, 0.5)" }}
+            >
+              {title}
+            </h1>
+          </div>
+
+          {/* Sidebar Button */}
+          {showSidebarButton && (
+            <button
+              onClick={() => setShowSidebar(true)}
+              className="group relative bg-gradient-to-r from-cyan-500/90 to-purple-600/90 hover:from-cyan-400 hover:to-purple-500 text-white p-3 rounded-xl transition-all duration-300 font-['Orbitron'] tracking-wide uppercase text-sm font-bold overflow-hidden border border-cyan-400/50"
+              style={{
+                boxShadow: "0 0 20px rgba(0, 255, 255, 0.3)",
+                textShadow: "0 0 8px rgba(255, 255, 255, 0.5)",
+              }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="relative z-10"
+              >
+                <path
+                  d="M3 12H21"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M3 6H21"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M3 18H21"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 
   // Sound refs
   const biteSound = useRef<HTMLAudioElement | null>(null);
@@ -152,7 +220,12 @@ const SnakeGame: React.FC<SnakeGameProps> = ({
 
     fetchFollowers();
     fetchPreviousBestScore();
-  }, [context?.user?.fid, context?.user?.username, propPreviousBestScore]);
+  }, [
+    context?.user?.fid,
+    context?.user?.username,
+    propPreviousBestScore,
+    showToast,
+  ]);
 
   useEffect(() => {
     // Load sound files
@@ -320,6 +393,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({
     gameStarted,
     followers,
     currentFollowerIndex,
+    playSound,
   ]);
 
   const submitScore = async (address: string, score: number) => {
@@ -396,7 +470,6 @@ const SnakeGame: React.FC<SnakeGameProps> = ({
       // If game is not started, start it
       if (!gameStarted) {
         setGameStarted(true);
-        setShowInfoModal(false);
       }
     } else {
       setActiveComponent(action);
@@ -410,7 +483,6 @@ const SnakeGame: React.FC<SnakeGameProps> = ({
 
   const handleStartGame = () => {
     setGameStarted(true);
-    setShowInfoModal(false);
 
     // Shuffle followers for a new sequence when starting game
     if (followers.length > 0) {
@@ -453,206 +525,32 @@ const SnakeGame: React.FC<SnakeGameProps> = ({
     return shareText;
   };
 
-  // Info Modal Component
-  const InfoModal = ({ onStart }: { onStart: () => void }) => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-soft-pink rounded-3xl p-6 max-w-md w-full mx-auto border-2 border-deep-pink shadow-xl relative">
-        {/* Title */}
-        <h3 className="text-deep-pink text-2xl font-extrabold mb-6 text-center">
-          How to Play
-        </h3>
-
-        {/* Instructions */}
-        <div className="space-y-4">
-          {/* Rule Item */}
-          <div className="flex items-start gap-3 p-4 bg-white rounded-xl shadow-md border border-deep-pink hover:scale-[1.02] transition-transform">
-            <div className="w-10 h-10 bg-deep-pink rounded-full flex items-center justify-center text-white text-lg flex-shrink-0">
-              👤
-            </div>
-            <div>
-              <h4 className="font-bold text-black mb-1">EAT</h4>
-              <p className="text-sm text-gray-700">
-                Collect your followers to grow and score points. Each follower
-                gives you <strong>+2 point</strong>.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3 p-4 bg-white rounded-xl shadow-md border border-deep-pink hover:scale-[1.02] transition-transform">
-            <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
-              <img
-                src="/drop.png"
-                alt="Drink"
-                className="w-6 h-6 object-contain"
-              />
-            </div>
-            <div>
-              <h4 className="font-bold text-black mb-1">DRINK</h4>
-              <p className="text-sm text-gray-700">
-                After every <strong>2 bites</strong>, you must find water. If
-                not, you&apos;ll die of thirst!
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3 p-4 bg-white rounded-xl shadow-md border border-deep-pink hover:scale-[1.02] transition-transform">
-            <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center text-white text-lg flex-shrink-0">
-              🚽
-            </div>
-            <div>
-              <h4 className="font-bold text-black mb-1">POOP</h4>
-              <p className="text-sm text-gray-700">
-                After every <strong>5 bites</strong>, you must find a commode or
-                your snake will die!
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3 p-4 bg-white rounded-xl shadow-md border border-deep-pink hover:scale-[1.02] transition-transform">
-            <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center text-lg flex-shrink-0">
-              ⚠️
-            </div>
-            <div>
-              <h4 className="font-bold text-black mb-1">AVOID</h4>
-              <p className="text-sm text-gray-700">
-                Don&apos;t hit yourself — the snake dies if it collides with its
-                own body!
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Action */}
-        <button
-          onClick={onStart}
-          className="w-full mt-8 bg-bright-pink text-soft-pink py-3 px-4 rounded-xl font-bold text-lg hover:bg-deep-pink transition-colors shadow-md"
-        >
-          Let&apos;s Play!
-        </button>
-      </div>
-    </div>
-  );
-
-  // Game Over Modal Component
-  const GameOverModal = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-soft-pink rounded-2xl p-6 max-w-lg mx-auto border-2 border-deep-pink shadow-2xl">
-        <h3 className="text-deep-pink text-2xl font-bold mb-4 text-center">
-          💀 WASTED!
-        </h3>
-        <div className="text-center mb-6">
-          <p className="text-black text-lg mb-2">
-            Final Score:{" "}
-            <span className="text-bright-pink font-bold">{score}</span>
-          </p>
-          {previousBestScore !== null && (
-            <div className="text-sm text-gray-600 mb-2">
-              Previous Best: {previousBestScore}
-            </div>
-          )}
-          {previousBestScore !== null && score > previousBestScore && (
-            <div className="text-green-600 font-bold text-sm mb-2">
-              🎉 New Personal Best!
-            </div>
-          )}
-          {previousBestScore !== null && score <= previousBestScore && (
-            <div className="text-gray-600 text-sm mb-2">
-              {score === previousBestScore
-                ? "🏆 Tied your best score!"
-                : "Keep trying to beat your best!"}
-            </div>
-          )}
-        </div>
-        <div className="text-center mb-6"></div>
-        <div className="space-y-3">
-          {!scoreSubmitted &&
-            (previousBestScore === null || score > previousBestScore) && (
-              <button
-                className="w-full bg-bright-pink text-soft-pink py-3 px-4 rounded-xl font-bold hover:bg-deep-pink transition-colors"
-                onClick={async () => {
-                  await submitScore(address as string, score);
-                }}
-                disabled={scoreSubmitting}
-              >
-                {scoreSubmitting ? "Submitting..." : "Submit Score"}
-              </button>
-            )}
-          <button
-            className="w-full bg-deep-pink text-soft-pink py-3 px-4 rounded-xl font-bold hover:bg-bright-pink transition-colors"
-            onClick={handleRestart}
-          >
-            Play Again
-          </button>
-        </div>
-
-        {scoreSubmitted && (
-          <div className="mt-4 text-center">
-            <div className="text-green-600 font-bold mb-3">
-              {previousBestScore !== null && score > previousBestScore
-                ? "🎉 New personal best submitted to leaderboard!"
-                : "✅ Score processed!"}
-            </div>
-          </div>
-        )}
-
-        <div className="mt-4">
-          <ShareButton
-            buttonText="Share Score"
-            cast={{
-              text: generateShareText(),
-              bestFriends: false,
-              embeds: [`${APP_URL}/share/${context?.user?.fid || ""}`],
-            }}
-            className="w-full bg-bright-pink text-soft-pink py-3 px-4 rounded-xl font-bold hover:bg-deep-pink transition-colors"
-          />
-        </div>
-      </div>
-    </div>
-  );
-
   // If a component is active, show it instead of the game
   if (activeComponent) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-deep-pink to-black">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-black relative overflow-hidden">
+        {/* Background effects */}
+        <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/10 via-purple-900/10 to-pink-900/10"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(0,255,255,0.1)_0%,transparent_50%),radial-gradient(circle_at_80%_20%,rgba(138,43,226,0.1)_0%,transparent_50%)]"></div>
+
+        {/* Header */}
+        <GameHeader
+          title={
+            activeComponent === "leaderboard"
+              ? "🏆 LEADERBOARD"
+              : activeComponent === "rules"
+              ? "RULES"
+              : activeComponent === "challenges"
+              ? "CHALLENGES"
+              : "GAME"
+          }
+        />
+
         <Sidebar
           isOpen={showSidebar}
           onClose={() => setShowSidebar(false)}
           onAction={handleSidebarAction}
         />
-        <button
-          onClick={() => setShowSidebar(true)}
-          className="absolute top-4 right-4 bg-bright-pink text-soft-pink p-2 rounded-lg hover:bg-deep-pink transition-colors z-10"
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M3 12H21"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M3 6H21"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M3 18H21"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
 
         {activeComponent === "leaderboard" && (
           <LeaderboardComponent onClose={closeComponent} />
@@ -669,127 +567,197 @@ const SnakeGame: React.FC<SnakeGameProps> = ({
 
   return (
     <>
-      {showInfoModal && <InfoModal onStart={handleStartGame} />}
-      <div
-        className={`game-container ${gameStarted ? "fullscreen" : ""} ${
-          showInfoModal ? "hidden" : ""
-        }`}
-      >
-        {!gameStarted ? (
+      {/* Main Game Container */}
+      <div className={`game-container ${gameStarted ? "fullscreen" : ""}`}>
+        {/* Show Header + Sidebar when game is NOT started */}
+        {!gameStarted && (
           <>
             <Sidebar
               isOpen={showSidebar}
               onClose={() => setShowSidebar(false)}
               onAction={handleSidebarAction}
             />
-            <button
-              onClick={() => setShowSidebar(true)}
-              className="absolute top-4 right-4 bg-bright-pink text-soft-pink p-2 rounded-lg hover:bg-deep-pink transition-colors z-10"
-            >
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M3 12H21"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M3 6H21"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M3 18H21"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-          </>
-        ) : (
-          <>
-            {gameOver && <GameOverModal />}
-            {gameStarted && (
-              <div className="absolute top-4 left-0 w-full px-6">
-                {/* Top row: Best (left) + Score (center) */}
-                <div className="flex items-center justify-between relative">
-                  <div className="text-soft-pink font-bold">
-                    Best: {previousBestScore}
-                  </div>
-                  <div className="absolute left-1/2 transform -translate-x-1/2 text-soft-pink font-bold">
-                    Score: {score}
-                  </div>
-                </div>
 
-                {/* Alerts (below Best on left) */}
-                <div className="absolute top-10 left-0 w-fill px-6">
-                  {!gameOver && bitesSinceWater === 2 && (
-                    <div className="alert">DRINK</div>
-                  )}
-                  {!gameOver && bitesSincePoop === 5 && (
-                    <div className="alert">POOP</div>
-                  )}
-                  {!gameOver &&
-                    bitesSincePoop !== 5 &&
-                    bitesSinceWater !== 2 && <div className="alert">EAT</div>}
-                </div>
-              </div>
-            )}
+            {/* Header for main menu */}
+            <GameHeader title="" />
 
-            <Sidebar
-              isOpen={showSidebar}
-              onClose={() => setShowSidebar(false)}
-              onAction={handleSidebarAction}
-            />
-            <button
-              onClick={() => setShowSidebar(true)}
-              className="absolute top-4 right-4 bg-bright-pink text-soft-pink p-2 rounded-lg hover:bg-deep-pink transition-colors z-10"
-            >
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
+            {/* Start Game Button - NOT in popup */}
+            <div className="flex flex-col items-center justify-center min-h-[100vh]">
+              <img
+                src="/logo.png"
+                alt="Farcaster"
+                className="w-60 h-60 rounded-2xl border-4 border-cyan-400 shadow-lg relative"
+                style={{
+                  boxShadow:
+                    "0 0 30px rgba(0, 255, 255, 0.6), 0 0 60px rgba(138, 43, 226, 0.5)",
+                  animation: "shineGlow 3s infinite alternate",
+                }}
+              />
+
+              <button
+                onClick={handleStartGame}
+                className="group bg-gradient-to-r from-cyan-500 to-purple-600 text-white py-6 px-12 rounded-2xl font-bold text-2xl hover:from-cyan-600 hover:to-purple-700 transition-all duration-300 font-['Orbitron'] tracking-wide uppercase relative overflow-hidden transform hover:scale-105"
+                style={{
+                  boxShadow: "0 0 30px rgba(0, 255, 255, 0.5)",
+                  textShadow: "0 0 15px rgba(255, 255, 255, 0.5)",
+                }}
               >
-                <path
-                  d="M3 12H21"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M3 6H21"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M3 18H21"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                <span className="relative z-10">START GAME</span>
+              </button>
+            </div>
           </>
         )}
 
-        {gameStarted && (
+        {/* Game Over Screen - Show Header + Sidebar + WASTED + Game Over Content (NOT in popup) */}
+        {gameOver && (
+          <>
+            {/* Header for game over */}
+            <GameHeader title="GAME OVER" />
+
+            <Sidebar
+              isOpen={showSidebar}
+              onClose={() => setShowSidebar(false)}
+              onAction={handleSidebarAction}
+            />
+
+            {/* WASTED Text */}
+            <div className="text-center mt-32 mb-8">
+              <h1
+                className="text-red-400 text-6xl font-bold font-['Orbitron'] tracking-wider uppercase"
+                style={{ textShadow: "0 0 25px rgba(239, 68, 68, 0.7)" }}
+              >
+                💀 WASTED!
+              </h1>
+            </div>
+
+            {/* Game Over Content - NOT in popup */}
+            <div className="max-w-2xl mx-auto px-6">
+              <div className="text-center mb-8">
+                <p className="text-cyan-200 text-xl mb-3 font-['Rajdhani']">
+                  Final Score:{" "}
+                  <span
+                    className="text-cyan-400 font-bold font-['Orbitron'] tracking-wide"
+                    style={{ textShadow: "0 0 15px rgba(0, 255, 255, 0.6)" }}
+                  >
+                    {score}
+                  </span>
+                </p>
+                {previousBestScore !== null && (
+                  <div className="text-sm text-cyan-300 mb-3 font-['Rajdhani']">
+                    Previous Best: {previousBestScore}
+                  </div>
+                )}
+                {previousBestScore !== null && score > previousBestScore && (
+                  <div
+                    className="text-green-400 font-bold text-lg mb-3 font-['Rajdhani'] animate-pulse"
+                    style={{ textShadow: "0 0 15px rgba(34, 197, 94, 0.6)" }}
+                  >
+                    🎉 New Personal Best!
+                  </div>
+                )}
+                {previousBestScore !== null && score <= previousBestScore && (
+                  <div className="text-cyan-300 text-sm mb-3 font-['Rajdhani']">
+                    {score === previousBestScore
+                      ? "🏆 Tied your best score!"
+                      : "Keep trying to beat your best!"}
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-4 mb-6">
+                {!scoreSubmitted &&
+                  (previousBestScore === null || score > previousBestScore) && (
+                    <button
+                      className="group w-full bg-gradient-to-r from-cyan-500 to-purple-600 text-white py-4 px-6 rounded-2xl font-bold hover:from-cyan-600 hover:to-purple-700 transition-all duration-300 font-['Orbitron'] tracking-wide uppercase relative overflow-hidden transform hover:scale-105"
+                      onClick={async () => {
+                        await submitScore(address as string, score);
+                      }}
+                      disabled={scoreSubmitting}
+                      style={{
+                        boxShadow: "0 0 25px rgba(0, 255, 255, 0.4)",
+                        textShadow: "0 0 10px rgba(255, 255, 255, 0.5)",
+                      }}
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                      <span className="relative z-10">
+                        {scoreSubmitting ? "Submitting..." : "Submit Score"}
+                      </span>
+                    </button>
+                  )}
+                <button
+                  className="group w-full bg-gradient-to-r from-slate-600 to-slate-700 text-white py-4 px-6 rounded-2xl font-bold hover:from-slate-700 hover:to-slate-800 transition-all duration-300 font-['Orbitron'] tracking-wide uppercase relative overflow-hidden transform hover:scale-105"
+                  onClick={handleRestart}
+                  style={{
+                    boxShadow: "0 0 25px rgba(148, 163, 184, 0.4)",
+                    textShadow: "0 0 10px rgba(255, 255, 255, 0.5)",
+                  }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                  <span className="relative z-10">Play Again</span>
+                </button>
+              </div>
+
+              {scoreSubmitted && (
+                <div className="text-center mb-6">
+                  <div
+                    className="text-green-400 font-bold mb-3 font-['Rajdhani'] text-lg"
+                    style={{ textShadow: "0 0 15px rgba(34, 197, 94, 0.6)" }}
+                  >
+                    {previousBestScore !== null && score > previousBestScore
+                      ? "🎉 New personal best submitted to leaderboard!"
+                      : "✅ Score processed!"}
+                  </div>
+                </div>
+              )}
+
+              <div className="mb-6">
+                <ShareButton
+                  buttonText="Share Score"
+                  cast={{
+                    text: generateShareText(),
+                    bestFriends: false,
+                    embeds: [`${APP_URL}/share/${context?.user?.fid || ""}`],
+                  }}
+                  className="group w-full bg-gradient-to-r from-cyan-500 to-purple-600 text-white py-4 px-6 rounded-2xl font-bold hover:from-cyan-600 hover:to-purple-700 transition-all duration-300 font-['Orbitron'] tracking-wide uppercase relative overflow-hidden transform hover:scale-105"
+                />
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Game UI - Only show during active gameplay (no header/sidebar) */}
+        {gameStarted && !gameOver && (
+          <div className="absolute top-4 left-0 w-full px-6">
+            {/* Top row: Best (left) + Score (center) */}
+            <div className="flex items-center justify-between relative">
+              <div
+                className="text-cyan-300 font-bold font-['Rajdhani'] text-lg"
+                style={{ textShadow: "0 0 10px rgba(0, 255, 255, 0.5)" }}
+              >
+                Best: {previousBestScore}
+              </div>
+              <div
+                className="absolute left-1/2 transform -translate-x-1/2 text-cyan-300 font-bold font-['Rajdhani'] text-lg"
+                style={{ textShadow: "0 0 10px rgba(0, 255, 255, 0.5)" }}
+              >
+                Score: {score}
+              </div>
+            </div>
+
+            {/* Alerts (below Best on left) */}
+            <div className="absolute top-10 left-0 w-fill px-6">
+              {bitesSinceWater === 2 && <div className="alert">DRINK</div>}
+              {bitesSincePoop === 5 && <div className="alert">POOP</div>}
+              {bitesSincePoop !== 5 && bitesSinceWater !== 2 && (
+                <div className="alert">EAT</div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Game Board - Only show during active gameplay */}
+        {gameStarted && !gameOver && (
           <div className="game-board-container">
             {/* Eaten Message */}
             {eatenMessage && (
@@ -894,6 +862,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({
           </div>
         )}
 
+        {/* Touch Controls - Only show during active gameplay */}
         {gameStarted && !gameOver && (
           <div className="touch-controls">
             <button onClick={() => setDirection({ x: 0, y: -1 })}>
@@ -931,7 +900,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path d="M12 4L20 12L12 20L4 12L12 4Z" fill="currentColor" />
-                  <path d="M16 12L12 8L8 12L12 16L16 12Z" fill="white" />
+                  <path d="M16 12L12 8L8 12L12 16L8 12Z" fill="white" />
                 </svg>
               </button>
             </div>

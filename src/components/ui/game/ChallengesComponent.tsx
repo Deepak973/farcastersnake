@@ -89,11 +89,11 @@ export const ChallengesComponent: React.FC<ChallengesComponentProps> = ({
   const renderChallenges = (challenges: ChallengeData[]) => {
     if (challenges.length === 0) {
       return (
-        <div className="text-center text-black py-8">
-          <div className="text-2xl mb-4">
+        <div className="text-center text-white py-12">
+          <div className="text-4xl mb-6 animate-pulse">
             {activeTab === "active" ? "⚔️" : "🏆"}
           </div>
-          <p className="text-lg">
+          <p className="text-xl font-['Rajdhani'] text-cyan-300">
             {activeTab === "active"
               ? "No active challenges! Create one to get started!"
               : "No previous challenges yet!"}
@@ -103,79 +103,117 @@ export const ChallengesComponent: React.FC<ChallengesComponentProps> = ({
     }
 
     return (
-      <div className="space-y-4">
+      <div className="space-y-6">
         {challenges.map((challenge) => (
           <div
             key={challenge.id}
-            className="bg-white rounded-xl p-6 border-2 border-deep-pink flex flex-col items-center text-center"
+            className="group bg-gradient-to-br from-slate-800/90 to-slate-900/90 rounded-2xl p-8 border-2 border-cyan-400/50 hover:border-cyan-400 transition-all duration-300 backdrop-blur-sm relative overflow-hidden"
+            style={{
+              boxShadow: "0 0 30px rgba(0, 255, 255, 0.1)",
+            }}
           >
+            {/* Glow effect on hover */}
+            <div
+              className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              style={{ boxShadow: "inset 0 0 30px rgba(0, 255, 255, 0.1)" }}
+            ></div>
+
             {/* Players Row */}
-            <div className="flex justify-between items-start w-full">
+            <div className="flex justify-between items-start w-full relative z-10">
               {/* Challenger */}
               <div className="flex flex-col items-center w-1/3 relative">
                 <div className="relative">
                   {challenge.winner === "challenger" && (
-                    <span className="absolute -top-6 left-1/2 transform -translate-x-1/2 text-yellow-400 text-3xl z-10">
+                    <span
+                      className="absolute -top-8 left-2 transform -translate-x-1/2 text-yellow-400 text-4xl z-10 animate-bounce"
+                      style={{ textShadow: "0 0 20px rgba(255, 215, 0, 0.8)" }}
+                    >
                       👑
                     </span>
                   )}
-                  <img
-                    src={challenge.challenger.pfpUrl}
-                    alt={challenge.challenger.displayName}
-                    className="w-14 h-14 rounded-full border-2 border-deep-pink"
-                  />
+                  <div className="relative">
+                    <img
+                      src={challenge.challenger.pfpUrl}
+                      alt={challenge.challenger.displayName}
+                      className="w-16 h-16 rounded-xl border-2 border-cyan-400 transition-all duration-300 group-hover:scale-110"
+                      style={{ boxShadow: "0 0 20px rgba(0, 255, 255, 0.3)" }}
+                    />
+                    <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-cyan-400/20 to-purple-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  </div>
                 </div>
-                <h3 className="font-bold text-black mt-2">
+                <h3
+                  className="font-bold text-white mt-3 font-['Rajdhani'] text-lg"
+                  style={{ textShadow: "0 0 10px rgba(255, 255, 255, 0.5)" }}
+                >
                   {challenge.challenger.displayName}
                 </h3>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-cyan-300 font-['Rajdhani']">
                   Score: {challenge.challenger.score ?? "Not played"}
                 </p>
               </div>
 
               {/* VS */}
               <div className="flex flex-col items-center justify-center w-1/3">
-                <div className="text-3xl">⚔️</div>
-                <div className="text-xs text-gray-600">VS</div>
+                <div className="text-4xl animate-pulse">⚔️</div>
+                <div className="text-sm text-cyan-400 font-['Orbitron'] font-bold tracking-wider uppercase">
+                  VS
+                </div>
               </div>
 
               {/* Challenged */}
               <div className="flex flex-col items-center w-1/3 relative">
                 <div className="relative">
                   {challenge.winner === "challenged" && (
-                    <span className="absolute -top-4 left-1/2 transform -translate-x-1/2 text-yellow-400 text-2xl z-10">
+                    <span
+                      className="absolute -top-8 left-2 transform -translate-x-1/2 text-yellow-400 text-4xl z-10 animate-bounce"
+                      style={{ textShadow: "0 0 20px rgba(255, 215, 0, 0.8)" }}
+                    >
                       👑
                     </span>
                   )}
-                  <img
-                    src={challenge.challenged.pfpUrl}
-                    alt={challenge.challenged.displayName}
-                    className="w-14 h-14 rounded-full border-2 border-deep-pink"
-                  />
+                  <div className="relative">
+                    <img
+                      src={challenge.challenged.pfpUrl}
+                      alt={challenge.challenged.displayName}
+                      className="w-16 h-16 rounded-xl border-2 border-cyan-400 transition-all duration-300 group-hover:scale-110"
+                      style={{ boxShadow: "0 0 20px rgba(0, 255, 255, 0.3)" }}
+                    />
+                    <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-cyan-400/20 to-purple-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  </div>
                 </div>
-                <h3 className="font-bold text-black mt-2">
+                <h3
+                  className="font-bold text-white mt-3 font-['Rajdhani'] text-lg"
+                  style={{ textShadow: "0 0 10px rgba(255, 255, 255, 0.5)" }}
+                >
                   {challenge.challenged.displayName}
                 </h3>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-cyan-300 font-['Rajdhani']">
                   Score: {challenge.challenged.score ?? "Not played"}
                 </p>
               </div>
             </div>
 
             {/* Status */}
-            <div className="mt-4 text-sm text-gray-700">
-              Status: {getChallengeStatus(challenge)}
+            <div className="mt-6 text-center">
+              <span className="inline-block px-4 py-2 bg-gradient-to-r from-cyan-900/50 to-purple-900/50 text-cyan-300 font-['Rajdhani'] font-semibold rounded-lg border border-cyan-400/30">
+                Status: {getChallengeStatus(challenge)}
+              </span>
             </div>
 
             {/* Actions */}
-            <div className="mt-4 w-full flex flex-col space-y-3">
+            <div className="mt-6 w-full flex flex-col space-y-4">
               {challenge.status === "active" ? (
                 <>
                   <a
                     href={`/challenge/${challenge.id}`}
-                    className="block w-full bg-bright-pink text-soft-pink px-6 py-3 rounded-xl font-bold hover:bg-deep-pink transition-colors"
+                    className="group/btn block w-full bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-6 py-4 rounded-xl font-bold hover:from-cyan-600 hover:to-purple-700 transition-all duration-300 font-['Orbitron'] tracking-wide uppercase relative overflow-hidden"
+                    style={{
+                      boxShadow: "0 0 20px rgba(0, 255, 255, 0.3)",
+                      textShadow: "0 0 10px rgba(255, 255, 255, 0.5)",
+                    }}
                   >
-                    Play Challenge
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700"></div>
+                    <span className="relative z-10">Play Challenge</span>
                   </a>
 
                   {/* Share Active Challenge */}
@@ -188,7 +226,7 @@ export const ChallengesComponent: React.FC<ChallengesComponentProps> = ({
                         `https://farcaster.xyz/miniapps/SmXRQmh2Sp33/farcaster-snake/challenge/${challenge.id}`,
                       ],
                     }}
-                    className="w-full bg-blue-500 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-600 transition-colors"
+                    className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4 rounded-xl font-bold hover:from-blue-700 hover:to-blue-800 transition-all duration-300 font-['Orbitron'] tracking-wide uppercase relative overflow-hidden"
                   />
                 </>
               ) : challenge.winner ? (
@@ -214,7 +252,7 @@ export const ChallengesComponent: React.FC<ChallengesComponentProps> = ({
                         `https://farcaster.xyz/miniapps/SmXRQmh2Sp33/farcaster-snake/challenge/${challenge.id}`,
                       ],
                     }}
-                    className="flex items-center justify-center space-x-2 w-full px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl font-bold transition-colors"
+                    className="flex items-center justify-center space-x-2 w-full px-6 py-4 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl font-bold transition-all duration-300 font-['Orbitron'] tracking-wide uppercase relative overflow-hidden"
                   />
                 </>
               ) : null}
@@ -226,24 +264,46 @@ export const ChallengesComponent: React.FC<ChallengesComponentProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-deep-pink to-black">
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold text-soft-pink text-center mb-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-black relative overflow-hidden">
+      {/* Background effects */}
+      <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/10 via-purple-900/10 to-pink-900/10"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(0,255,255,0.1)_0%,transparent_50%),radial-gradient(circle_at_80%_20%,rgba(138,43,226,0.1)_0%,transparent_50%)]"></div>
+
+      <div className="container mx-auto px-4 py-8 relative z-10">
+        <div className="max-w-5xl mx-auto">
+          <h1
+            className="text-3xl font-bold text-center mb-12 font-['Orbitron'] tracking-wider uppercase"
+            style={{
+              background: "linear-gradient(135deg, #00ffff, #8a2be2, #ff1493)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              textShadow: "0 0 30px rgba(0, 255, 255, 0.5)",
+            }}
+          >
             ⚔️ Challenges
           </h1>
 
-          <div className="text-center mb-8">
+          <div className="text-center mb-12">
             <button
               onClick={() => setShowCreateChallenge(!showCreateChallenge)}
-              className="bg-bright-pink text-soft-pink px-6 py-3 rounded-xl font-bold hover:bg-deep-pink transition-colors"
+              className="group bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-8 py-4 rounded-2xl font-bold hover:from-cyan-600 hover:to-purple-700 transition-all duration-300 font-['Orbitron'] tracking-wide uppercase text-lg relative overflow-hidden"
+              style={{
+                boxShadow: "0 0 30px rgba(0, 255, 255, 0.4)",
+                textShadow: "0 0 15px rgba(255, 255, 255, 0.5)",
+              }}
             >
-              {showCreateChallenge ? "❌ Cancel" : "➕ Create Challenge"}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+              <span className="relative z-10">
+                {showCreateChallenge ? "❌ Cancel" : "➕ Create Challenge"}
+              </span>
             </button>
           </div>
 
           {showCreateChallenge && (
-            <div className="bg-soft-pink rounded-2xl p-6 shadow-2xl mb-8">
+            <div
+              className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 rounded-3xl p-8 shadow-2xl mb-12 border-2 border-cyan-400/50 backdrop-blur-sm"
+              style={{ boxShadow: "0 0 40px rgba(0, 255, 255, 0.2)" }}
+            >
               <Challenge
                 isEmbedded={true}
                 setShowCreateChallenge={setShowCreateChallenge}
@@ -251,27 +311,40 @@ export const ChallengesComponent: React.FC<ChallengesComponentProps> = ({
             </div>
           )}
 
-          <div className="bg-soft-pink rounded-2xl p-6 shadow-2xl">
+          <div
+            className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 rounded-3xl p-8 shadow-2xl border-2 border-cyan-400/50 backdrop-blur-sm"
+            style={{ boxShadow: "0 0 40px rgba(0, 255, 255, 0.2)" }}
+          >
             {/* Tabs */}
-            <div className="flex justify-center mb-6">
-              <div className="bg-white rounded-xl p-1 border-2 border-deep-pink">
+            <div className="flex justify-center mb-8">
+              <div className="flex gap-4 bg-gradient-to-r from-slate-700/80 to-slate-800/80 rounded-2xl p-2 border-2 border-cyan-400/50 backdrop-blur-sm text-sm">
                 <button
                   onClick={() => setActiveTab("active")}
-                  className={`px-6 py-2 rounded-lg font-bold transition-colors ${
+                  className={`px-3 py-3 rounded-xl font-bold transition-all duration-300 font-['Orbitron'] tracking-wide ${
                     activeTab === "active"
-                      ? "bg-bright-pink text-soft-pink"
-                      : "text-gray-600 hover:text-deep-pink"
+                      ? "bg-gradient-to-r from-cyan-500 to-purple-600 text-white shadow-lg"
+                      : "text-cyan-300 hover:text-white hover:bg-slate-600/50"
                   }`}
+                  style={
+                    activeTab === "active"
+                      ? { boxShadow: "0 0 20px rgba(0, 255, 255, 0.4)" }
+                      : {}
+                  }
                 >
                   Active ({activeChallenges.length})
                 </button>
                 <button
                   onClick={() => setActiveTab("previous")}
-                  className={`px-6 py-2 rounded-lg font-bold transition-colors ${
+                  className={`px-3 py-3 rounded-xl font-bold transition-all duration-300 font-['Orbitron'] tracking-wide ${
                     activeTab === "previous"
-                      ? "bg-bright-pink text-soft-pink"
-                      : "text-gray-600 hover:text-deep-pink"
+                      ? "bg-gradient-to-r from-cyan-500 to-purple-600 text-white shadow-lg"
+                      : "text-cyan-300 hover:text-white hover:bg-slate-600/50"
                   }`}
+                  style={
+                    activeTab === "previous"
+                      ? { boxShadow: "0 0 20px rgba(0, 255, 255, 0.4)" }
+                      : {}
+                  }
                 >
                   Previous ({previousChallenges.length})
                 </button>
@@ -281,8 +354,10 @@ export const ChallengesComponent: React.FC<ChallengesComponentProps> = ({
             {/* Tab Content */}
             <div className="text-center">
               {loading ? (
-                <div className="text-center text-black py-8">
-                  Loading challenges...
+                <div className="text-center text-white py-12">
+                  <div className="text-2xl text-cyan-400 font-['Rajdhani'] animate-pulse">
+                    Loading challenges...
+                  </div>
                 </div>
               ) : (
                 renderChallenges(
@@ -292,12 +367,17 @@ export const ChallengesComponent: React.FC<ChallengesComponentProps> = ({
             </div>
           </div>
 
-          <div className="text-center mt-8">
+          <div className="text-center mt-12">
             <button
               onClick={onClose}
-              className="inline-block bg-bright-pink text-soft-pink px-6 py-3 rounded-xl font-bold hover:bg-deep-pink transition-colors"
+              className="group inline-block bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-8 py-4 rounded-2xl font-bold hover:from-cyan-600 hover:to-purple-700 transition-all duration-300 font-['Orbitron'] tracking-wide uppercase text-lg relative overflow-hidden"
+              style={{
+                boxShadow: "0 0 30px rgba(0, 255, 255, 0.4)",
+                textShadow: "0 0 15px rgba(255, 255, 255, 0.5)",
+              }}
             >
-              🎮 Back to Game
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+              <span className="relative z-10">🎮 Back to Game</span>
             </button>
           </div>
         </div>
