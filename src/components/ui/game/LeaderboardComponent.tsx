@@ -38,12 +38,12 @@ export const LeaderboardComponent: React.FC<LeaderboardComponentProps> = ({
   }, []);
 
   return (
-    <div className="min-h-screen top-20 bg-gradient-to-br from-slate-900 via-slate-800 to-black relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br top-20 from-slate-900 via-slate-800 to-black relative overflow-hidden">
       {/* Background effects */}
       <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/10 via-purple-900/10 to-pink-900/10"></div>
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(0,255,255,0.1)_0%,transparent_50%),radial-gradient(circle_at_80%_20%,rgba(138,43,226,0.1)_0%,transparent_50%)]"></div>
 
-      <div className="container mx-auto px-4 py-8 relative z-10">
+      <div className="container mx-auto px-4 py-8 pb-24 relative z-10">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-12">

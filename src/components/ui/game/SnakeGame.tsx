@@ -633,7 +633,11 @@ const SnakeGame: React.FC<SnakeGameProps> = ({
 
       {/* Main Menu Screen - NOT in popup */}
       {!gameStarted && (
-        <>
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-black relative overflow-hidden">
+          {/* Background effects */}
+          <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/10 via-purple-900/10 to-pink-900/10"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(0,255,255,0.1)_0%,transparent_50%),radial-gradient(circle_at_80%_20%,rgba(138,43,226,0.1)_0%,transparent_50%)]"></div>
+
           <Sidebar
             isOpen={showSidebar}
             onClose={() => setShowSidebar(false)}
@@ -645,10 +649,6 @@ const SnakeGame: React.FC<SnakeGameProps> = ({
 
           {/* Enhanced Main Menu */}
           <div className="pt-32 flex flex-col items-center justify-center min-h-screen relative overflow-hidden px-6">
-            {/* Background Effects */}
-            <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-black"></div>
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(0,255,255,0.1)_0%,transparent_50%),radial-gradient(circle_at_80%_20%,rgba(138,43,226,0.1)_0%,transparent_50%)]"></div>
-
             {/* Floating Particles */}
             <div className="absolute inset-0 overflow-hidden">
               {[...Array(20)].map((_, i) => (
@@ -801,12 +801,16 @@ const SnakeGame: React.FC<SnakeGameProps> = ({
               </div>
             </div>
           </div>
-        </>
+        </div>
       )}
 
       {/* Game Over Screen - Show Header + Sidebar + WASTED + Game Over Content (NOT in popup) */}
       {gameOver && (
-        <>
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-black relative overflow-hidden">
+          {/* Background effects */}
+          <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/10 via-purple-900/10 to-pink-900/10"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(0,255,255,0.1)_0%,transparent_50%),radial-gradient(circle_at_80%_20%,rgba(138,43,226,0.1)_0%,transparent_50%)]"></div>
+
           {/* Header for game over */}
           <GameHeader title="GAME OVER" />
 
@@ -827,7 +831,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({
           </div>
 
           {/* Game Over Content - NOT in popup */}
-          <div className="max-w-2xl mx-auto px-6">
+          <div className="max-w-2xl mx-auto px-6 pb-8">
             <div className="text-center mb-8">
               <p className="text-cyan-200 text-xl mb-3 font-['Rajdhani']">
                 Final Score:{" "}
@@ -918,263 +922,253 @@ const SnakeGame: React.FC<SnakeGameProps> = ({
               />
             </div>
           </div>
-        </>
+        </div>
       )}
 
       {/* Game UI - Only show during active gameplay (no header/sidebar) */}
       {gameStarted && !gameOver && (
-        <div className="absolute top-4 left-0 w-full px-6">
-          {/* Top row: Best (left) + Score (center) */}
-          <div className="flex items-center justify-between relative">
-            <div
-              className="text-cyan-300 font-bold font-['Rajdhani'] text-lg"
-              style={{ textShadow: "0 0 10px rgba(0, 255, 255, 0.5)" }}
-            >
-              Best: {previousBestScore}
-            </div>
-            <div
-              className="absolute left-1/2 transform -translate-x-1/2 text-cyan-300 font-bold font-['Rajdhani'] text-lg"
-              style={{ textShadow: "0 0 10px rgba(0, 255, 255, 0.5)" }}
-            >
-              Score: {score}
-            </div>
-          </div>
-        </div>
-      )}
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-black relative overflow-hidden">
+          {/* Background effects */}
+          <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/10 via-purple-900/10 to-pink-900/10"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(0,255,255,0.1)_0%,transparent_50%),radial-gradient(circle_at_80%_20%,rgba(138,43,226,0.1)_0%,transparent_50%)]"></div>
 
-      {/* Game Board - Only show during active gameplay */}
-      {gameStarted && !gameOver && (
-        <div className="game-board-container">
-          {/* Eaten Message */}
-          {eatenMessage && (
-            <div className="eaten-message">
-              <div className="eaten-content">
-                <img
-                  src={eatenMessage.image}
-                  alt={eatenMessage.name}
-                  className="eaten-avatar"
-                />
-                <span className="eaten-text">{eatenMessage.name}</span>
+          <div className="absolute top-4 left-0 w-full px-6">
+            {/* Top row: Best (left) + Score (center) */}
+            <div className="flex items-center justify-between relative">
+              <div
+                className="text-cyan-300 font-bold font-['Rajdhani'] text-lg"
+                style={{ textShadow: "0 0 10px rgba(0, 255, 255, 0.5)" }}
+              >
+                Best: {previousBestScore}
+              </div>
+              <div
+                className="absolute left-1/2 transform -translate-x-1/2 text-cyan-300 font-bold font-['Rajdhani'] text-lg"
+                style={{ textShadow: "0 0 10px rgba(0, 255, 255, 0.5)" }}
+              >
+                Score: {score}
               </div>
             </div>
-          )}
+          </div>
 
-          <div className="game-board">
-            <div
-              className="board-grid"
-              style={{
-                gridTemplateRows: `repeat(${BOARD_SIZE}, 40px)`,
-                gridTemplateColumns: `repeat(${BOARD_SIZE}, 40px)`,
-              }}
-            >
-              {[...Array(BOARD_SIZE * BOARD_SIZE)].map((_, i) => {
-                const x = i % BOARD_SIZE;
-                const y = Math.floor(i / BOARD_SIZE);
+          {/* Game Board - Only show during active gameplay */}
+          <div className="game-board-container">
+            {/* Eaten Message */}
+            {eatenMessage && (
+              <div className="eaten-message">
+                <div className="eaten-content">
+                  <img
+                    src={eatenMessage.image}
+                    alt={eatenMessage.name}
+                    className="eaten-avatar"
+                  />
+                  <span className="eaten-text">{eatenMessage.name}</span>
+                </div>
+              </div>
+            )}
 
-                // Use smooth position for head, actual snake array for body
-                const isHead =
-                  Math.floor(snake[0].x) === x && Math.floor(snake[0].y) === y;
-                const isBody = snake
-                  .slice(1)
-                  .some((cell) => cell.x === x && cell.y === y);
-                const isFood = foods.some(
-                  (cell) => cell.x === x && cell.y === y
-                );
-                const isWater = water && water.x === x && water.y === y;
-                const isCommode = commode && commode.x === x && commode.y === y;
+            <div className="game-board">
+              <div
+                className="board-grid"
+                style={{
+                  gridTemplateRows: `repeat(${BOARD_SIZE}, 40px)`,
+                  gridTemplateColumns: `repeat(${BOARD_SIZE}, 40px)`,
+                }}
+              >
+                {[...Array(BOARD_SIZE * BOARD_SIZE)].map((_, i) => {
+                  const x = i % BOARD_SIZE;
+                  const y = Math.floor(i / BOARD_SIZE);
 
-                let cellClass = "cell";
-                let content: React.ReactNode = "";
-
-                if (isHead) {
-                  content = (
-                    <div className="relative group">
-                      {/* Glowing background effect for head */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 rounded-lg opacity-70 blur-sm scale-110 animate-pulse"></div>
-
-                      {/* Head container with gaming frame */}
-                      <div className="relative z-10 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg p-1 border-2 border-cyan-400 shadow-lg">
-                        <img
-                          src={context?.user?.pfpUrl || "/farcaster.webp"}
-                          alt="Snake Head"
-                          className="w-full h-full rounded-md object-cover"
-                          style={{
-                            boxShadow: "0 0 15px rgba(0, 255, 255, 0.7)",
-                            filter:
-                              "drop-shadow(0 0 8px rgba(138, 43, 226, 0.8))",
-                          }}
-                        />
-                      </div>
-
-                      {/* Crown indicator for head */}
-                      <div className="absolute -top-2 -right-2 w-4 h-4 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full animate-bounce opacity-90 flex items-center justify-center">
-                        <span className="text-xs">👑</span>
-                      </div>
-                    </div>
+                  // Use smooth position for head, actual snake array for body
+                  const isHead =
+                    Math.floor(snake[0].x) === x &&
+                    Math.floor(snake[0].y) === y;
+                  const isBody = snake
+                    .slice(1)
+                    .some((cell) => cell.x === x && cell.y === y);
+                  const isFood = foods.some(
+                    (cell) => cell.x === x && cell.y === y
                   );
-                } else if (isBody) {
-                  cellClass += " snake-body";
-                  // Add creative body content based on eaten followers
-                  const bodyIndex =
-                    snake.findIndex((cell) => cell.x === x && cell.y === y) - 1;
-                  if (bodyIndex < eatenFollowers.length) {
-                    const eatenFollower = eatenFollowers[bodyIndex];
+                  const isWater = water && water.x === x && water.y === y;
+                  const isCommode =
+                    commode && commode.x === x && commode.y === y;
+
+                  let cellClass = "cell";
+                  let content: React.ReactNode = "";
+
+                  if (isHead) {
                     content = (
                       <div className="relative group">
-                        {/* Subtle glowing background for body */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/30 to-purple-500/30 rounded-md opacity-40 blur-sm scale-105"></div>
+                        {/* Glowing background effect for head */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 rounded-lg opacity-70 blur-sm scale-110 animate-pulse"></div>
 
-                        {/* Body segment with eaten follower */}
-                        <div className="relative z-10 bg-gradient-to-br from-slate-700 to-slate-800 rounded-md p-0.5 border border-cyan-400/30 shadow-md">
+                        {/* Head container with gaming frame */}
+                        <div className="relative z-10 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg p-1 border-2 border-cyan-400 shadow-lg">
                           <img
-                            src={eatenFollower.pfpUrl}
-                            alt={`${
-                              eatenFollower.displayName ||
-                              eatenFollower.username
-                            }`}
-                            className="w-full h-full rounded-sm object-cover"
+                            src={context?.user?.pfpUrl || "/farcaster.webp"}
+                            alt="Snake Head"
+                            className="w-full h-full rounded-md object-cover"
                             style={{
-                              boxShadow: "0 0 5px rgba(0, 255, 255, 0.3)",
+                              boxShadow: "0 0 15px rgba(0, 255, 255, 0.7)",
                               filter:
-                                "drop-shadow(0 0 3px rgba(138, 43, 226, 0.4))",
+                                "drop-shadow(0 0 8px rgba(138, 43, 226, 0.8))",
                             }}
                           />
                         </div>
 
-                        {/* Small indicator dot */}
-                        <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-gradient-to-r from-cyan-400 to-purple-500 rounded-full opacity-60"></div>
+                        {/* Crown indicator for head */}
+                        <div className="absolute -top-2 -right-2 w-4 h-4 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full animate-bounce opacity-90 flex items-center justify-center">
+                          <span className="text-xs">👑</span>
+                        </div>
                       </div>
                     );
-                  }
-                }
+                  } else if (isBody) {
+                    cellClass += " snake-body";
+                    // Add creative body content based on eaten followers
+                    const bodyIndex =
+                      snake.findIndex((cell) => cell.x === x && cell.y === y) -
+                      1;
+                    if (bodyIndex < eatenFollowers.length) {
+                      const eatenFollower = eatenFollowers[bodyIndex];
+                      content = (
+                        <div className="relative group">
+                          {/* Subtle glowing background for body */}
+                          <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/30 to-purple-500/30 rounded-md opacity-40 blur-sm scale-105"></div>
 
-                if (isFood) {
-                  const currentFollower = getCurrentFollower();
-                  if (currentFollower && currentFollower.pfpUrl) {
+                          {/* Body segment with eaten follower */}
+                          <div className="relative z-10 bg-gradient-to-br from-slate-700 to-slate-800 rounded-md p-0.5 border border-cyan-400/30 shadow-md">
+                            <img
+                              src={eatenFollower.pfpUrl}
+                              alt={`${
+                                eatenFollower.displayName ||
+                                eatenFollower.username
+                              }`}
+                              className="w-full h-full rounded-sm object-cover"
+                              style={{
+                                boxShadow: "0 0 5px rgba(0, 255, 255, 0.3)",
+                                filter:
+                                  "drop-shadow(0 0 3px rgba(138, 43, 226, 0.4))",
+                              }}
+                            />
+                          </div>
+
+                          {/* Small indicator dot */}
+                          <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-gradient-to-r from-cyan-400 to-purple-500 rounded-full opacity-60"></div>
+                        </div>
+                      );
+                    }
+                  }
+
+                  if (isFood) {
+                    const currentFollower = getCurrentFollower();
+                    if (currentFollower && currentFollower.pfpUrl) {
+                      content = (
+                        <div className="relative group">
+                          {/* Glowing background effect */}
+                          <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-purple-500 rounded-lg opacity-60 blur-sm scale-110 animate-pulse"></div>
+
+                          {/* Profile image with gaming frame */}
+                          <div className="relative z-10 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg p-1 border border-cyan-400/50 shadow-lg">
+                            <img
+                              src={currentFollower.pfpUrl}
+                              alt={`${
+                                currentFollower.displayName ||
+                                currentFollower.username
+                              }`}
+                              className="w-full h-full rounded-md object-cover"
+                              style={{
+                                boxShadow: "0 0 10px rgba(0, 255, 255, 0.5)",
+                                filter:
+                                  "drop-shadow(0 0 5px rgba(138, 43, 226, 0.6))",
+                              }}
+                            />
+                          </div>
+
+                          {/* Floating indicator */}
+                          <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-cyan-400 to-purple-500 rounded-full animate-pulse opacity-80"></div>
+                        </div>
+                      );
+                    } else {
+                      // Fallback to enhanced default food icon
+                      content = (
+                        <div className="relative group">
+                          {/* Glowing background */}
+                          <div className="absolute inset-0 bg-gradient-to-r from-pink-400 to-purple-500 rounded-lg opacity-60 blur-sm scale-110 animate-pulse"></div>
+
+                          {/* Enhanced default icon */}
+                          <div className="relative z-10 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg p-2 border border-pink-400/50 shadow-lg flex items-center justify-center">
+                            <div className="text-lg font-bold text-white animate-bounce">
+                              👤
+                            </div>
+                          </div>
+
+                          {/* Floating indicator */}
+                          <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-pink-400 to-purple-500 rounded-full animate-pulse opacity-80"></div>
+                        </div>
+                      );
+                    }
+                  } else if (isWater) {
                     content = (
                       <div className="relative group">
                         {/* Glowing background effect */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-purple-500 rounded-lg opacity-60 blur-sm scale-110 animate-pulse"></div>
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-lg opacity-60 blur-sm scale-110 animate-pulse"></div>
 
-                        {/* Profile image with gaming frame */}
-                        <div className="relative z-10 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg p-1 border border-cyan-400/50 shadow-lg">
+                        {/* Water drop with gaming frame */}
+                        <div className="relative z-10 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg p-1 border border-blue-400/50 shadow-lg">
                           <img
-                            src={currentFollower.pfpUrl}
-                            alt={`${
-                              currentFollower.displayName ||
-                              currentFollower.username
-                            }`}
-                            className="w-full h-full rounded-md object-cover"
+                            src="/drop.png"
+                            alt="Water"
+                            className="w-full h-full rounded-md object-contain"
                             style={{
-                              boxShadow: "0 0 10px rgba(0, 255, 255, 0.5)",
+                              boxShadow: "0 0 10px rgba(59, 130, 246, 0.5)",
                               filter:
-                                "drop-shadow(0 0 5px rgba(138, 43, 226, 0.6))",
+                                "drop-shadow(0 0 5px rgba(0, 255, 255, 0.6))",
                             }}
                           />
                         </div>
 
                         {/* Floating indicator */}
-                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-cyan-400 to-purple-500 rounded-full animate-pulse opacity-80"></div>
+                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-full animate-pulse opacity-80"></div>
                       </div>
                     );
-                  } else {
-                    // Fallback to enhanced default food icon
+                  } else if (isCommode) {
                     content = (
                       <div className="relative group">
-                        {/* Glowing background */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-pink-400 to-purple-500 rounded-lg opacity-60 blur-sm scale-110 animate-pulse"></div>
+                        {/* Glowing background effect */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-slate-500 to-slate-600 rounded-lg opacity-60 blur-sm scale-110 animate-pulse"></div>
 
-                        {/* Enhanced default icon */}
-                        <div className="relative z-10 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg p-2 border border-pink-400/50 shadow-lg flex items-center justify-center">
-                          <div className="text-lg font-bold text-white animate-bounce">
-                            👤
-                          </div>
+                        {/* Commode with gaming frame */}
+                        <div className="relative z-10 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg p-1 border border-slate-400/50 shadow-lg">
+                          <img
+                            src="/comode.png"
+                            alt="Commode"
+                            className="w-full h-full rounded-md object-contain"
+                            style={{
+                              boxShadow: "0 0 10px rgba(148, 163, 184, 0.5)",
+                              filter:
+                                "drop-shadow(0 0 5px rgba(75, 85, 99, 0.6))",
+                            }}
+                          />
                         </div>
 
                         {/* Floating indicator */}
-                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-pink-400 to-purple-500 rounded-full animate-pulse opacity-80"></div>
+                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-slate-400 to-slate-500 rounded-full animate-pulse opacity-80"></div>
                       </div>
                     );
                   }
-                } else if (isWater) {
-                  content = (
-                    <div className="relative group">
-                      {/* Glowing background effect */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-lg opacity-60 blur-sm scale-110 animate-pulse"></div>
 
-                      {/* Water drop with gaming frame */}
-                      <div className="relative z-10 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg p-1 border border-blue-400/50 shadow-lg">
-                        <img
-                          src="/drop.png"
-                          alt="Water"
-                          className="w-full h-full rounded-md object-contain"
-                          style={{
-                            boxShadow: "0 0 10px rgba(59, 130, 246, 0.5)",
-                            filter:
-                              "drop-shadow(0 0 5px rgba(0, 255, 255, 0.6))",
-                          }}
-                        />
-                      </div>
-
-                      {/* Floating indicator */}
-                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-full animate-pulse opacity-80"></div>
+                  return (
+                    <div key={i} className={cellClass}>
+                      {content}
                     </div>
                   );
-                } else if (isCommode) {
-                  content = (
-                    <div className="relative group">
-                      {/* Glowing background effect */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-slate-500 to-slate-600 rounded-lg opacity-60 blur-sm scale-110 animate-pulse"></div>
-
-                      {/* Commode with gaming frame */}
-                      <div className="relative z-10 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg p-1 border border-slate-400/50 shadow-lg">
-                        <img
-                          src="/comode.png"
-                          alt="Commode"
-                          className="w-full h-full rounded-md object-contain"
-                          style={{
-                            boxShadow: "0 0 10px rgba(148, 163, 184, 0.5)",
-                            filter:
-                              "drop-shadow(0 0 5px rgba(75, 85, 99, 0.6))",
-                          }}
-                        />
-                      </div>
-
-                      {/* Floating indicator */}
-                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-slate-400 to-slate-500 rounded-full animate-pulse opacity-80"></div>
-                    </div>
-                  );
-                }
-
-                return (
-                  <div key={i} className={cellClass}>
-                    {content}
-                  </div>
-                );
-              })}
+                })}
+              </div>
             </div>
           </div>
-        </div>
-      )}
 
-      {/* Touch Controls - Only show during active gameplay */}
-      {gameStarted && !gameOver && (
-        <div className="touch-controls">
-          <button onClick={() => setDirection({ x: 0, y: -1 })}>
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M12 4L20 12L12 20L4 12L12 4Z" fill="currentColor" />
-              <path d="M12 8L16 12L12 16L8 12L12 8Z" fill="white" />
-            </svg>
-          </button>
-
-          <div className="flex items-center justify-center space-x-10">
-            <button onClick={() => setDirection({ x: -1, y: 0 })}>
+          {/* Touch Controls - Only show during active gameplay */}
+          <div className="touch-controls">
+            <button onClick={() => setDirection({ x: 0, y: -1 })}>
               <svg
                 width="24"
                 height="24"
@@ -1183,10 +1177,38 @@ const SnakeGame: React.FC<SnakeGameProps> = ({
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path d="M12 4L20 12L12 20L4 12L12 4Z" fill="currentColor" />
-                <path d="M8 12L12 8L16 12L12 16L8 12Z" fill="white" />
+                <path d="M12 8L16 12L12 16L8 12L12 8Z" fill="white" />
               </svg>
             </button>
-            <button onClick={() => setDirection({ x: 1, y: 0 })}>
+
+            <div className="flex items-center justify-center space-x-10">
+              <button onClick={() => setDirection({ x: -1, y: 0 })}>
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M12 4L20 12L12 20L4 12L12 4Z" fill="currentColor" />
+                  <path d="M8 12L12 8L16 12L12 16L8 12Z" fill="white" />
+                </svg>
+              </button>
+              <button onClick={() => setDirection({ x: 1, y: 0 })}>
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M12 4L20 12L12 20L4 12L12 4Z" fill="currentColor" />
+                  <path d="M16 12L12 8L8 12L12 16L8 12Z" fill="white" />
+                </svg>
+              </button>
+            </div>
+
+            <button onClick={() => setDirection({ x: 0, y: 1 })}>
               <svg
                 width="24"
                 height="24"
@@ -1195,23 +1217,10 @@ const SnakeGame: React.FC<SnakeGameProps> = ({
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path d="M12 4L20 12L12 20L4 12L12 4Z" fill="currentColor" />
-                <path d="M16 12L12 8L8 12L12 16L8 12Z" fill="white" />
+                <path d="M8 12L12 16L16 12L12 8L8 12Z" fill="white" />
               </svg>
             </button>
           </div>
-
-          <button onClick={() => setDirection({ x: 0, y: 1 })}>
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M12 4L20 12L12 20L4 12L12 4Z" fill="currentColor" />
-              <path d="M8 12L12 16L16 12L12 8L8 12Z" fill="white" />
-            </svg>
-          </button>
         </div>
       )}
     </>

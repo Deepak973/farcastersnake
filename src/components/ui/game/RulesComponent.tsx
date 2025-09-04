@@ -12,7 +12,7 @@ export const RulesComponent: React.FC<RulesComponentProps> = ({ onClose }) => {
       <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/10 via-purple-900/10 to-pink-900/10"></div>
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(0,255,255,0.1)_0%,transparent_50%),radial-gradient(circle_at_80%_20%,rgba(138,43,226,0.1)_0%,transparent_50%)]"></div>
 
-      <div className="container mx-auto px-4 py-16 relative z-10">
+      <div className="container mx-auto px-4 py-16 pb-24 relative z-10">
         <div className="max-w-3xl mx-auto">
           {/* Header */}
           <div className="text-center mb-12">
